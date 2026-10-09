@@ -1,0 +1,24 @@
+{
+  "_comment": "Fontes p\u00fablicas de EPG, em ordem de prioridade. Para cada canal vence a fonte com a grade mais longa (mais futuro).",
+  "sources": [
+    {
+      "name": "epgshare-br",
+      "url": "https://epgshare01.online/epgshare01/epg_ripper_BR1.xml.gz"
+    },
+    {
+      "name": "epgshare-pt",
+      "url": "https://epgshare01.online/epgshare01/epg_ripper_PT1.xml.gz"
+    },
+    {
+      "name": "pluto-br",
+      "url": "https://i.mjh.nz/PlutoTV/br.xml.gz"
+    },
+    {
+      "name": "m3u4u",
+      "url_env": "M3U4U_EPG_URL"
+    }
+  ],
+  "min_hours_ahead": 24,
+  "days_past": 1,
+  "output": "docs/epg.xml.gz"
+}

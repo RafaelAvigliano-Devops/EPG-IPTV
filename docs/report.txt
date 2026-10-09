@@ -1,0 +1,923 @@
+Gerado em 2026-10-09 00:26 UTC
+Canais com EPG >= 24h à frente: 269
+
+EPG curto/desatualizado (0):
+
+
+Sem EPG em nenhuma fonte (0):
+
+
+Canais sem epg_channel_id: 121 casados por nome (ver channel_map.csv); sem EPG (913):
+RECORD SP FHD
+RECORD SP FHD [H265]
+RECORD SP HD
+Record SP SD
+GLOBO SP 4K FHDR
+RECORD RJ FHD
+RECORD RJ HD
+RECORD RJ HD [Alt]
+RECORD RJ SD
+AGRO CANAL FHD
+AGRO CANAL HD
+AGRO CANAL SD
+AMAZON PRIME VIDEO 01 FHD
+AMAZON PRIME VIDEO 01 HD
+AMAZON PRIME VIDEO 02 FHD
+AMAZON PRIME VIDEO 02 HD
+AMAZON PRIME VIDEO 03 FHD
+AMAZON PRIME VIDEO 03 HD
+AMAZON PRIME VIDEO 04
+AppleTV+ 1
+AppleTV+ 2
+AppleTV+ 3
+AppleTV+ 4
+BAND RN HD
+BAND TV TRIBUNA RECIFE HD
+BAND UBERLANDIA FHD
+BAND UBERLANDIA HD
+BAND UBERLANDIA SD
+BBC HD
+BBC SD
+BRTV MAX RODEIO
+Campeonato Baiano 01 - TVE BAHIA
+Campeonato Goiano 01
+Campeonato Pernambucano 01
+Campeonato Sergipano 01
+Campeonato Sergipano 02
+CANAL WEB - RCN67
+CANAL WEB PORTAL DA TROPICAL
+CAZE TV 1
+CAZE TV 2
+CAZE TV 3
+CENTRALTV BRASIL
+Cine Sky 01
+Cine Sky 02
+Cine Sky 03
+Cine Sky 04
+Cine Sky 05
+Cine Sky 06
+Cine Sky 07
+Cine Sky 08
+Cine Sky 09
+Cine Sky 10
+Cine Sky 11
+Cine Sky 12
+Cine Sky 13
+Cine Sky 14
+Cine Sky 15
+DAZN 01
+DAZN 02
+DAZN 03
+DAZN 04
+DAZN 05
+DISNEY+ 2
+DISNEY+ 3
+DISNEY+ 4
+DISNEY+ 5
+DISNEY+ 6
+DISNEY+ 7
+DISNEY+8
+DISNEY+ 9
+DISNEY+ 10
+ESPN 3 4K FHDR
+ESPN 4 4K FHDR
+ESPN 5 4K FHDR
+ESPN 6 4K FHDR
+EVENTOS EXTRAS 01
+Formula 1 - 2026
+GAZETA NORTE ESPIRITO SANTO FHD
+GAZETA NORTE ESPIRITO SANTO HD
+GAZETA NORTE ESPIRITO SANTO SD
+GAZETA SUL ESPIRITO SANTO FHD
+GAZETA SUL ESPIRITO SANTO HD
+GAZETA SUL ESPIRITO SANTO SD
+GE TV
+GLOBO CRUZEIRO DO SUL FHD
+GLOBO CRUZEIRO DO SUL HD
+GLOBO CRUZEIRO DO SUL SD
+GLOBO EPTV ARARAQUARA FHD
+GLOBO EPTV ARARAQUARA HD
+GLOBO EPTV ARARAQUARA SD
+GLOBO RBS TV PASSO FUNDO FHD
+GLOBO RBS TV PASSO FUNDO HD
+GLOBO RBS TV PASSO FUNDO SD
+GLOBO REDE AMAZONICA GUAJARA MIRIM FHD
+GLOBO REDE AMAZONICA GUAJARA MIRIM HD
+GLOBO REDE AMAZONICA GUAJARA MIRIM SD
+GLOBO REDE AMAZONICA JI PARANA HD
+GLOBO REDE AMAZONICA JI PARANA SD
+GLOBO REDE AMAZONICA PORTO VELHO FHD
+GLOBO REDE AMAZONICA PORTO VELHO HD
+GLOBO REDE AMAZONICA PORTO VELHO SD
+GLOBO REDE BOA VISTA FHD
+GLOBO REDE BOA VISTA HD
+GLOBO REDE BOA VISTA SD
+GLOBO RPC MARINGA FHD
+GLOBO RPC MARINGA FHD [H265]
+GLOBO RPC MARINGA HD
+GLOBO RPC MARINGA SD
+GLOBO TV BOM DIA JOACABA FHD
+GLOBO TV BOM DIA JOACABA HD
+GLOBO TV BOM DIA JOACABA SD
+GLOBO TV CENTRO AMERICA NORTE FHD
+GLOBO TV CENTRO AMERICA NORTE HD
+GLOBO TV CENTRO AMERICA NORTE SD
+GLOBO TV GAZETA DE ALAGOAS FHD
+GLOBO TV GAZETA DE ALAGOAS HD
+GLOBO TV GAZETA DE ALAGOAS SD
+GLOBO TV GAZETA ES VITORIA FHD
+GLOBO TV GAZETA ES VITORIA HD
+GLOBO TV GAZETA ES VITORIA SD
+GLOBO TV LIBERAL BELEM FHD
+GLOBO TV LIBERAL BELEM HD
+GLOBO TV LIBERAL BELEM SD
+GLOBO TV PRESIDENTE PRUDENTE FHD
+GLOBO TV PRESIDENTE PRUDENTE HD
+GLOBO TV PRESIDENTE PRUDENTE SD
+GLOBO TV SUBAE FHD
+GLOBO TV SUBAE HD
+GLOBO TV SUBAE SD
+GLOBO TV SÃO FRANCISCO FHD
+GLOBO TV SÃO FRANCISCO HD
+GLOBO TV SÃO FRANCISCO SD
+GLOBO TV TAPAJOS FHD
+GLOBO TV TAPAJOS HD
+GLOBO TV TAPAJOS SD
+GLOBO TV VANGUARDA S. J. DOS CAMPOS HD
+GLOBO TV VANGUARDA S. J. DOS CAMPOS SD
+GNT FHD 4K FHDR
+GOAT 1
+GOAT 2
+GOAT 3
+GOAT 4
+GOAT 5
+HBO 4K FHDR
+Jovem Pan News 4K FHDR
+LOVE NATURE HD [ALT]
+MAX 01
+MAX 02
+MAX 03
+MAX 04
+MAX 05
+MAX 06
+MAX 07
+MIRANTE BOLSAS HD
+MR. Olympia PPV
+NBA LEAGUE PASS 01 HD
+NBA LEAGUE PASS 02 HD
+NBA LEAGUE PASS 03 HD
+NBA LEAGUE PASS 04 HD
+NBA LEAGUE PASS 06 HD
+NBA LEAGUE PASS 07 HD
+NBA LEAGUE PASS 08 HD
+NBA LEAGUE PASS 09 HD
+NBA LEAGUE PASS 10 HD
+NBA LEAGUE PASS 11 HD
+NBA LEAGUE PASS 12 HD
+NBA LEAGUE PASS 13 HD
+NBA LEAGUE PASSs 05 HD
+NSPORTS 1 HD
+OneFootball 01
+OneFootball 02
+OneFootball 03
+OneFootball 04
+PARAMOUNT + 03 HD [ALT]
+PARAMOUNT + 04 HD [ALT]
+PARAMOUNT+ 5 HD
+PARAMOUNT + 05 HD [ALT]
+PARAMOUNT+ 06 HD
+PETROLINA PE
+PREMIERE 2 - 4K FHDR
+RBC HD
+RECORD BH HD
+RECORD CAMPOS DOS GOYTACAZES HD
+RECORD CAMPOS DOS GOYTACAZES SD
+RECORD GO FHD
+RECORD GO HD
+RECORD GO SD
+RECORD LITORAL VALE DO PARNAÍBA FHD
+RECORD LITORAL VALE DO PARNAÍBA HD
+RECORD LITORAL VALE DO PARNAÍBA SD
+RECORD MA FHD
+RECORD MA HD
+RECORD MA SD
+RECORD NDTV  FLORIPA FHD
+RECORD NDTV  FLORIPA HD
+RECORD NDTV BLUMENAU HD
+RECORD PARANAÍBA DE UBERLÂNDIA FHD
+RECORD PARANAÍBA DE UBERLÂNDIA HD
+RECORD RIC FHD
+RECORD RIC HD
+RECORD RIC SD
+RECORD RS FHD
+RECORD RS HD
+RECORD RS SD
+RECORD SIC TV RONDÔNIA FHD
+RECORD SIC TV RONDÔNIA HD
+RECORD TV CIDADE CEARA
+RECORD TV Correio - PB
+REDE AMAZONICA ITACOATIARA FHD
+REDE AMAZONICA ITACOATIARA HD
+REDE AMAZONICA ITACOATIARA SD
+REDE AMAZONICA PARINTINS FHD
+REDE AMAZONICA PARINTINS HD
+REDE AMAZONICA PARINTINS SD
+REDE FURACÃO
+SBT  SC HD
+SBT FLORIPA FHD
+SBT FLORIPA HD
+SBT FLORIPA SD
+SBT ITAPOAN FHD
+SBT ITAPOAN HD
+SBT SAO LUIZ MA HD
+SBT SP FHD
+SBT SP HD
+SBT SP SD
+SBT TV ARATU -BAHIA FHD
+SBT TV JANGADEIRO -CEARA
+SBT TV JORNAL RECIFE
+TRAVEL BOX BRASIL FHD
+TV ARACATI HD
+TV CLUBE PIAUI FHD
+TV GAZETA MACEIO FHD
+TV GAZETA MACEIO HD
+TV GAZETA MACEIO SD
+TV IMPD FHD
+TV IMPD HD
+TV IMPD SD
+TV PETRÓPOLIS HD
+TV PLENITUDE
+WEB-SANTA PORTAL
+(01)   ⏰ 19:30 • Santos x Flamengo •
+(02)   ⏰ 19:30 • Ceará x Criciúma •
+(03)   ⏰ 19:30 • Náutico x Novorizontino •
+(04)   ⏰ 20:00 • Athletico Paranaense x Atlético Mineiro •
+(05)   ⏰ 21:30 • Fluminense x Coritiba •
+(06)   ⏰ 21:30 • Palmeiras x Bahia •
+(07)  FIM DO EVENTO
+(08)  FIM DO EVENTO
+(09)  FIM DO EVENTO
+(10)  FIM DO EVENTO
+(11)  FIM DO EVENTO
+(12)  FIM DO VENTO
+(13)  FIM DO VENTO
+(14)  FIM DO VENTO
+(15)  FIM DO VENTO
+(16)  FIM DO VENTO
+(17)  FIM DO VENTO
+(18) FIM DO VENTO
+(19) FIM DO VENTO
+(20) FIM DO VENTO
+(21) FIM DO VENTO
+(22)FIM DO VENTO
+(23) FIM DO VENTO
+(24) FIM DO VENTO
+(25) FIM DO VENTO
+(26) FIM DO VENTO
+(27) FIM DO VENTO
+(28) FIM DO VENTO
+(00) |US| NFL Network HD
+(02) FIM DO EVENTO
+(03)  FIM DO EVENTO
+(04)  FIM DO EVENTO
+(05)  FIM DO EVENTO
+(06)  FIM DO EVENTO
+(07)  FIM DO EVENTO
+(08)  FIM DO EVENTO
+(09)  FIM DO EVENTO
+(10)  FIM DO EVENTO
+(11)  FIM DO EVENTO
+(12)  FIM DO EVENTO
+(13)  FIM DO EVENTO
+(14)  FIM DO EVENTO
+NFL 15 |
+NFL 16 |
+[24H] Zé Buscapé
+[24H] Zatch Bell
+[24H] YU-YU-Hakusho
+[24H] Xuxa só para Baixinhos 2
+[24H] Xuxa só para Baixinhos 1
+[24H] X-Men 2
+[24H] X-Men 1
+[24H] Wolverine e os X-Men
+[24H] Wally Gator
+Cachorro. Vai!
+[24H] Ursinhos Carinhosos 2
+[24H] Ursinhos Carinhosos 1
+[24H] Turma do Pateta
+[24H] Três Espiãs Demais
+[24H] Tom & Jerry
+[24H] Timão e Pumba 02
+[24H] Timão e Pumba 01
+[24H] Thundercats
+[24H] Team-Galaxy
+[24H] Tartarugas Ninjas
+[24H] Superman Animado 02
+[24H] Superman Animado 01
+[24H] Superman - Homem do Amanhã
+[24H] Super Wings 02
+[24H] Super Wings 01
+[24H] Super Mario Bros 2
+[24H] Super Mario Bros 1
+[24H] Super Choque 2
+[24H] Super Choque 1
+[24H] Street Fighter 2
+[24H] Steven Universe
+[24H] Speed-Racer
+[24H] South Park 03
+[24H] South Park 02
+[24H] South Park 01
+[24H] Sitio do Pica-Pau Amarelo
+[24H] Simon
+[24H] Shurato
+[24H] Show da Luna
+[24H] Shinzo
+[24H] She-ra
+[24H] Shaman King
+[24H] Scooby-Doo - 13 Fantasmas 1985
+[24H] Scooby-Doo
+[24H] Sapo Não Lava o Pé 02
+[24H] Sapo Não Lava o Pé 01
+[24H] Samurai-X 2
+[24H] Samurai-X 1
+[24H] Samurai Warriors
+[24H] Sakura Card
+[24H] Rimas de Berçário
+[24H] Reino Gelado
+[24H] Rambo
+[24H] Princesa e o Dragão
+[24H] Popeye 75th
+[24H] Pokemon 2
+[24H] Pokemon 1
+[24H] Pocoyo
+[24H] PJ Masks
+[24H] Pintinho Amarelinho 2
+[24H] Pintinho Amarelinho 1
+[24H] Pink-e-Cerebro
+[24H] Pica Pau 03
+[24H] Pica Pau 02
+[24H] Pica Pau 01
+[24H] Pernalonga 02
+[24H] Pernalonga 01
+[24H] Pequena Sereia
+[24H] Peppa Pig
+[24H] Patrulha Canina 6
+[24H] Patrulha Canina 5
+[24H] Patrulha Canina 4
+[24H] Patrulha Canina 3
+[24H] Patrulha Canina 2
+[24H] Pato Donald
+[24H] Patati e Patata 03
+[24H] Patati e Patata 02
+[24H] Patati e Patata 01
+[24H] Pantera Cor de Rosa 2
+[24H] Pantera Cor de Rosa 1
+[24H] Os Simpsons 34
+[24H] Os Simpsons 33
+[24H] Os Simpsons 32
+[24H] Os Simpsons 31
+[24H] Os Simpsons 30
+[24H] Os Simpsons 29
+[24H] Os Simpsons 28
+[24H] Os Simpsons 27
+[24H] Os Simpsons 26
+[24H] Os Simpsons 25
+[24H] Os Simpsons 24
+[24H] Os Simpsons 23
+[24H] Os Simpsons 22
+[24H] Os Simpsons 21
+[24H] Os Simpsons 20
+[24H] Os Simpsons 19
+[24H] Os Simpsons 18
+[24H] Os Simpsons 17
+[24H] Os Simpsons 16
+[24H] Os Simpsons 15
+[24H] Os Simpsons 14
+[24H] Os Simpsons 13
+[24H] Os Simpsons 12
+[24H] Os Simpsons 11
+[24H] Os Simpsons 10
+[24H] Os Simpsons 09
+[24H] Os Simpsons 08
+[24H] Os Simpsons 07
+[24H] Os Simpsons 06
+[24H] Os Simpsons 05
+[24H] Os Simpsons 04
+[24H] Os Simpsons 03
+[24H] Os Simpsons 02
+[24H] Os Simpsons 01
+[24H] Os Patos
+[24H] Os Padrinhos Mágicos 05
+[24H] Os Padrinhos Mágicos 04
+[24H] Os Padrinhos Mágicos 03
+[24H] Os Padrinhos Mágicos 02
+[24H] Os Padrinhos Mágicos 01
+[24H] Os Jetson
+[24H] Os Flinstones
+[24H] One Piece East Blue
+[24H] Oggy e as Baratas
+[24H] O Clube das Winx
+[24H] Moranguinho 2
+[24H] Moranguinho 1
+[24H] MegaMan
+[24H] Medabots
+[24H] Masha e o Urso
+[24H] Luluzinha 2
+[24H] Luluzinha 1
+[24H] Looney Tunes
+[24H] Liga da Justica
+[24H] Leo O-Caminhão
+[24H] Larva Chiclete
+[24H] Kenan e Kel
+[24H] Johnny Test
+[24H] Johnny Bravo
+[24H] Jiraya
+[24H] Jacarelvis
+[24H] Irmão do Jorel 2
+[24H] Irmão do Jorel 1
+[24H] Homem de Ferro 1994
+[24H] Homem de Ferro 02
+[24H] Homem de Ferro 01
+[24H] Homem Aranha Animado 2
+[24H] Homem Aranha Animado 1
+[24H] He-Man 3
+[24H] He-Man 2002
+[24H] He-Man 2
+[24H] He-Man 1
+[24H] Garfield 03
+[24H] Garfield 02
+[24H] Garfield 01
+[24H] Galo e a Pata
+[24H] Galinha Pintadinha
+[24H] Futurama
+[24H] Freakazoid
+[24H] Formiga Atômica
+[24H] Em Busca do Vale Encantado
+Dudu e Edu
+[24H] Dragon Ball [Filmes 1]
+[24H] Dragon Ball Z 2
+[24H] Dragon Ball Z 1
+[24H] Dragon Ball Super 3
+[24H] Dragon Ball Super 2
+[24H] Dragon Ball Super 1
+[24H] Dragon Ball Heroes
+[24H] Dragon Ball 2
+[24H] Dragon Ball 1
+[24H] Doug 2
+[24H] Doug 1
+[24H] Dora Aventureira 2
+[24H] Dora Aventureira 01
+[24H] Digimon Tamers
+[24H] Digimon Savers
+[24H] Digimon Frontier
+[24H] Digimon Adventure Zero Two
+[24H] Digimon 2
+[24H] Digimon 15º Aniversário
+[24H] Digimon 1
+[24H] Corrida Maluca 3
+[24H] Corrida Maluca 2
+[24H] Corrida Maluca 1968
+[24H] Corrida Maluca 1
+[24H] Coragem o Cão Covarde 2
+[24H] Coragem o Cão Covarde 1
+O Otimista
+[24H] Chaves Desenho
+[24H] Caverna do Dragão 1
+[24H] Cavaleiros do Zodiaco 6
+[24H] Cavaleiros do Zodiaco 5
+[24H] Cavaleiros do Zodiaco 4
+[24H] Cavaleiros do Zodiaco 3
+[24H] Cavaleiros do Zodiaco 2
+[24H] Cavaleiros do Zodiaco 1
+[24H] Cascão A Turma da Monica
+[24H] Carmen Sandiego
+[24H] Caillou
+[24H] Booba 2
+[24H] Booba 1
+[24H] Bob Zoom 2
+[24H] Bob Zoom 1
+[24H] Bob o Trem 2
+[24H] Bob o Trem 1
+[24H] Bob Esponja 01
+[24H] Bita e os Animais
+[24H] BEN 10 2
+[24H] BEN 10 - 01
+[24H] Baby Looney Tunes
+[24H] As Meninas Superpoderosas
+[24H] As Aventuras do Batman 02
+[24H] As Aventuras do Batman 01
+[24H] Apenas um Show
+[24H] Angry Birds
+[24H] Aladdin
+[24H] A Roda do Ônibus
+[24H] A Mansão Foster
+[24H] A Guarda do Leão
+[24H] A Casa do Mickey Mouse
+[24H] 3 Palavrinhas
+[24H] YT-Policia Militar
+[24H] YT-Investigação Criminal
+[24H] YT-Delegado Dacunha 04
+[24H] YT-Delegado Dacunha 03
+[24H] YT-Delegado Dacunha 02
+[24H] YT-Delegado Dacunha 01
+[24H] Thiago Ventura
+[24H] Porta dos Fundos 02
+[24H] Porta dos Fundos 01
+[24H] A Culpa é do Cabral 03
+[24H] A Culpa é do Cabral 02
+[24H] A Culpa é do Cabral 01
+X-Men 02
+X-Men 01
+O Senhor dos Aneis - Trilogia
+O Hobbit - Trilogia
+Maze Runner - Trilogia
+Marvel 04
+Marvel 03
+Marvel 02
+Marvel 01
+John Wick - Trilogia
+Jogos Vorazes - Quadrilogia
+Jogos Mortais 02
+Jogos Mortais 01
+Harry Potter 02
+Harry Potter 01
+Disney Clássico 02
+Disney Clássico 01
+DC Comics 02
+DC Comics 01
+Batman - Trilogia
+[24H] Big Mouth 05
+[24H] Big Mouth 04
+[24H] Bobs Burgers 11
+[24H] Bobs Burgers 09
+[24H] Castlevania 03
+[24H] Castlevania 02
+[24H] Castlevania 01
+[24H] Caçadores De Bugs 02
+[24H] Caçadores De Bugs 01
+[24H] Bobs Burgers 08
+[24H] Bobs Burgers 07
+[24H] Bobs Burgers 06
+[24H] Bobs Burgers 05
+[24H] Bobs Burgers 04
+[24H] Bobs Burgers 03
+[24H] Bobs Burgers 02
+[24H] Bobs Burgers 01
+[24H] Big Mouth 03
+[24H] Big Mouth 02
+[24H] Big Mouth 01
+[24H] Prison Break 05
+[24H] Prison Break 04
+[24H] Prison Break 03
+[24H] Prison Break 02
+[24H] Prison Break 01
+[24H] Dexter 08
+[24H] Dexter 07
+[24H] Dexter 06
+[24H] Dexter 05
+[24H] Dexter 04
+[24H] Dexter 03
+[24H] Dexter 02
+[24H] Dexter 01
+[24H] American Dad 17
+[24H] American Dad 16
+[24H] American Dad 15
+[24H] American Dad 14
+[24H] American Dad 13
+[24H] American Dad 12
+[24H] American Dad 11
+[24H] American Dad 10
+[24H] American Dad 09
+[24H] American Dad 08
+[24H] American Dad 07
+[24H] American Dad 06
+[24H] American Dad 05
+[24H] American Dad 04
+[24H] American Dad 03
+[24H] American Dad 02
+[24H] American Dad 01
+[24H] Filhos da Anarquia 07
+[24H] Filhos da Anarquia 06
+[24H] Filhos da Anarquia 05
+[24H] Filhos da Anarquia 04
+[24H] Filhos da Anarquia 03
+[24H] Filhos da Anarquia 02
+[24H] Filhos da Anarquia 01
+[24H] Uma Família da Pesada 20
+[24H] Uma Família da Pesada 19
+[24H] Uma Família da Pesada 18
+[24H] Uma Família da Pesada 17
+[24H] Uma Família da Pesada 16
+[24H] Uma Família da Pesada 15
+[24H] Uma Família da Pesada 14
+[24H] Uma Família da Pesada 13
+[24H] Uma Família da Pesada 12
+[24H] Uma Família da Pesada 11
+[24H] Uma Família da Pesada 10
+[24H] Uma Família da Pesada 09
+[24H] Uma Família da Pesada 08
+[24H] Uma Família da Pesada 07
+[24H] Uma Família da Pesada 06
+[24H] Uma Família da Pesada 05
+[24H] Uma Família da Pesada 04
+[24H] Uma Família da Pesada 03
+[24H] Uma Família da Pesada 02
+[24H] The Walking Dead 11
+[24H] The Walking Dead 10
+[24H] The Walking Dead 09
+[24H] The Walking Dead 08
+[24H] The Walking Dead 07
+[24H] The Walking Dead 06
+[24H] The Walking Dead 05
+[24H] The Walking Dead 04
+[24H] The Walking Dead 03
+[24H] The Walking Dead 02
+[24H] The Walking Dead 01
+[24H] Dr House 08
+[24H] Dr House 07
+[24H] Dr House 06
+[24H] Dr House 05
+[24H] Dr House 04
+[24H] Dr House 03
+[24H] Dr House 02
+[24H] Dr House 01
+[24H] Game Of Thrones 08
+[24H] Game Of Thrones 07
+[24H] Game Of Thrones 06
+[24H] Game Of Thrones 05
+[24H] Game Of Thrones 04
+[24H] Game Of Thrones 03
+[24H] Game Of Thrones 02
+[24H] Game Of Thrones 01
+[24H] Detetives do Prédio Azul 14
+[24H] Detetives do Prédio Azul 13
+[24H] Detetives do Prédio Azul 12
+[24H] Detetives do Prédio Azul 11
+[24H] Detetives do Prédio Azul 10
+[24H] Detetives do Prédio Azul 9
+[24H] Detetives do Prédio Azul 8
+[24H] Detetives do Prédio Azul 7
+[24H] Detetives do Prédio Azul 6
+[24H] Detetives do Prédio Azul 5
+[24H] Detetives do Prédio Azul 4
+[24H] Detetives do Prédio Azul 3
+[24H] Detetives do Prédio Azul 2
+[24H] Detetives do Prédio Azul 1
+[24H] A Grande Familia 14
+[24H] A Grande Familia 13
+[24H] A Grande Familia 12
+[24H] A Grande Familia 11
+[24H] A Grande Familia 10
+[24H] A Grande Familia 9
+[24H] A Grande Familia 8
+[24H] A Grande Familia 7
+[24H] A Grande Familia 6
+[24H] A Grande Familia 5
+[24H] A Grande Familia 4
+[24H] A Grande Familia 3
+[24H] Black Mirror 05
+[24H] Black Mirror 06
+[24H] Black Mirror 04
+[24H] Black Mirror 03
+[24H] Black Mirror 02
+[24H] Black Mirror 01
+[24H] Xena
+[24H] Vai que Cola 8
+[24H] Vai que Cola 7
+[24H] Vai que Cola 6
+[24H] Vai que Cola 5
+[24H] Vai que Cola 3
+[24H] Vai que Cola 2
+[24H] Vai que Cola 1
+[24H] Uma Família da Pesada 1
+[24H] Um Maluco no Pedaço 6
+[24H] Um Maluco no Pedaço 5
+[24H] Um Maluco no Pedaço 4
+[24H] Um Maluco no Pedaço 3
+[24H] Um Maluco no Pedaço 2
+[24H] Um Maluco no Pedaço 1
+[24H] Ultraman
+[24H] Todo Mundo Odeia o Chris 8
+[24H] Todo Mundo Odeia o Chris 7
+[24H] Todo Mundo Odeia o Chris 6
+[24H] Todo Mundo Odeia o Chris 5
+[24H] Todo Mundo Odeia o Chris 4
+[24H] Todo Mundo Odeia o Chris 3
+[24H] Todo Mundo Odeia o Chris 2
+[24H] Todo Mundo Odeia o Chris 1
+[24H] Supernatural 14
+[24H] Supernatural 13
+[24H] Supernatural 12
+[24H] Supernatural 11
+[24H] Supernatural 10
+[24H] Supernatural 09
+[24H] Supernatural 08
+[24H] Supernatural 07
+[24H] Supernatural 06
+[24H] Supernatural 05
+[24H] Supernatural 04
+[24H] Supernatural 03
+[24H] Supernatural 02
+[24H] Supernatural 01
+[24H] Smallville 10
+[24H] Smallville 09
+[24H] Smallville 08
+[24H] Smallville 07
+[24H] Smallville 06
+[24H] Smallville 05
+[24H] Smallville 04
+[24H] Smallville 03
+[24H] Smallville 02
+[24H] Smallville 01
+[24H] Rick And Morty 6
+[24H] Rick And Morty 5
+[24H] Rick And Morty 4
+[24H] Rick And Morty 3
+[24H] Rick And Morty 2
+[24H] Rick And Morty 1
+[24H] Os Trapalhões
+[24H] Friends 10
+[24H] Friends 09
+[24H] Friends 08
+[24H] Friends 07
+[24H] Friends 06
+[24H] Friends 05
+[24H] Friends 04
+[24H] Friends 03
+[24H] Friends 02
+[24H] Friends 01
+[24H] Eu a Patroa e as Crianças 5
+[24H] Eu a Patroa e as Crianças 4
+[24H] Eu a Patroa e as Crianças 3
+[24H] Eu a Patroa e as Crianças 2
+[24H] Eu a Patroa e as Crianças 1
+[24H] Escolinha do Professor Raimundo
+[24H] Dois Homens e Meio 12
+[24H] Dois Homens e Meio 11
+[24H] Dois Homens e Meio 10
+[24H] Dois Homens e Meio 09
+[24H] Dois Homens e Meio 08
+[24H] Dois Homens e Meio 07
+[24H] Dois Homens e Meio 06
+[24H] Dois Homens e Meio 05
+[24H] Dois Homens e Meio 04
+[24H] Dois Homens e Meio 03
+[24H] Dois Homens e Meio 02
+[24H] Dois Homens e Meio 01
+[24H] Chaves 1
+[24H] Chapolin 1
+[24H] Auto da Comparecida
+[24H] As Visões da Raven
+[24H] A Grande Familia 2
+[24H] A Grande Familia 1
+Zé Neto e Cristiano [Live Dia da Cerveja]
+Zé Neto e Cristiano [Live Barzinho Aleatório]
+Zé Neto e Cristiano [Live Barretão]
+Xand Avião e os Barões da Pisadinha [Live Oficial]
+Wesley Safadão e Raça Negra [Skol Sunset]
+VillaMix em Casa [Só Modão]
+Trio Parada Dura [A Última Live - Especial Parrerito]
+Trio Parada Dura e Cesar Menotti [Na Fazenda do Ratinho]
+Só Pra Contrariar [Session 2]
+Só Pra Contrariar [Especial 30 Anos]
+Live Junina]
+Simone e Simaria [Pocket Show]
+Simone e Simaria [Live das Coleguinhas 2]
+Simone e Simaria [Live das Coleguinhas 2 Libras]
+Simone e Simaria [Live das Coleguinhas 1]
+Raça Negra e Amigos em Casa [Live 21-04-2020]
+Raça Negra e Alexandre Pires [Live Gigantes do Samba]
+Marilia Mendonça [Workshow]
+Marilia Mendonça [Todos os Cantos]
+Marilia Mendonça [Live Local]
+Marilia Mendonça [Lado B]
+Maiara e Maraisa [Workshow]
+Maiara e Maraisa [Fun Live]
+Maiara e Maraisa [Drive-In Na Terra]
+Maiara e Maraisa [Aqui na Fazenda]
+Maiara e Maraisa [Aqui em Casa 2]
+Maiara e Maraisa [Aqui em Casa 1]
+Bebo e Choro]
+Leonardo e Zé Felipe [Pai e Filho]
+Leonardo e Luiza e Maurílio [Aqui em Uberlândia]
+Leonardo e Eduardo Costa [Cabaré]
+Jorge e Mateus [Sunset]
+Jorge e Mateus [Pelo Amor de Deus]
+Jorge e Mateus [Na Praia Hotel]
+Henrique e Juliano [Live Liberdade Provisória]
+Daniel e Leonardo [Live Buteco em Casa 3]
+Gusttavo Lima [YouTube Music]
+Gusttavo Lima [Festa do Peão Barretos]
+Gusttavo Lima [Especial São João]
+Gusttavo Lima [Embaixador no Agronegócio]
+Gusttavo Lima [Buteco Em Casa 1]
+Gusttavo Lima [Buteco em BH]
+Eduardo Costa [Especial Dia dos Namorados]
+Eduardo Costa [Aqui em Uberlândia]
+Leonardo e Bruno e Marrone]
+Xand e Raí Saia Rodada]
+Bruno e Marrone [Live 4 sem propagandas]
+Bruno e Marrone [Live 3 sem propagandas]
+Bruno e Marrone [Live 16-05-2020]
+B&M + Wesley Safadão [Live 19-09-2020]
+Alexandre Pires [Live do Nego Véio]
+Alexandre Pires e Seu Jorge [Live Irmãos]
+XXX | 4K | Holed 10
+XXX | 4K | Holed 09
+XXX | 4K | Holed 08
+XXX | 4K | Holed 07
+XXX | 4K | Holed 06
+XXX | 4K | Holed 05
+XXX | 4K | Holed 04
+XXX | 4K | Holed 03
+XXX | 4K | Holed 02
+XXX | 4K | Holed 01
+XXX | 4K | CarnaFunk 2019
+XXX | 4K | BangBros 04
+XXX | 4K | BangBros 03
+XXX | 4K | BangBros 02
+XXX | 4K | BangBros 01
+XXX Yara Rocha
+XXX Wanessa Boyer
+XXX Thammy Gretchen
+XXX Show de Bundas 02
+XXX Show de Bundas 01
+XXX Rita Cadillac 02
+XXX Rita Cadillac 01
+XXX Rafaela Nakamura
+XXX Pamela Pantera
+XXX Nicolle Bittencourt
+XXX Monica Santiago
+XXX Mofos Latina Sex FHD
+XXX Mia Linz
+XXX Manu Fox
+XXX Loupan
+XXX Julianna Vega
+XXX Julia Paes
+XXX Julia Mattos
+XXX Gina Jolie
+XXX Fernandinha Fernandez
+XXX Esposa Heyya [amador]
+XXX Carol Fenix
+XXX Brazzers 06 FHD
+XXX Brazzers 05 FHD
+XXX Brazzers 04 FHD
+XXX Brazzers 03 FHD
+XXX Brazzers 02 FHD
+XXX Brazzers 01 FHD
+XXX Brad Montana 12
+XXX Brad Montana 11
+XXX Brad Montana 10
+XXX Brad Montana 09
+XXX Brad Montana 08
+XXX Brad Montana 07
+XXX Brad Montana 06
+XXX Brad Montana 05
+XXX Brad Montana 04
+XXX Brad Montana 03
+XXX Brad Montana 02
+XXX Brad Montana 01
+XXX Asiaticas 04
+XXX Asiaticas 03
+XXX Asiaticas 02
+XXX Asiaticas 01
+XXX Analine
+XXX Ana Julia
+XXX Aline Rios
+XXX Alexandre Frota
+XXX Alessandra Marques
+XXX Abella Danger
+XXX A Casa das Brasileirinhas Vol. 63
+XXX A Casa das Brasileirinhas Vol. 62
+XXX 4K Brasileirinhas: Contos Eróticos
+XXX 4K Brasileirinhas: Contos do Big
+Visit-X TV HD
+RedTraffic TV Threesome
+RedTraffic TV Teen
+RedTraffic TV Russian
+RedTraffic TV Rough
+RedTraffic TV POV
+RedTraffic TV Pornstar
+RedTraffic TV MILF
+RedTraffic TV Live Cams
+RedTraffic TV Lesbian
+RedTraffic TV Latina
+RedTraffic TV Interracial
+RedTraffic TV Hardcore
+RedTraffic TV Gay
+RedTraffic TV Gangbang
+RedTraffic TV Fetish
+RedTraffic TV Cuckold
+RedTraffic TV Compilation
+RedTraffic TV Brunette
+RedTraffic TV Blowjob
+RedTraffic TV Blonde
+RedTraffic TV Big Tits
+RedTraffic TV Big Dick
+RedTraffic TV Big Ass
+RedTraffic TV Anal
+SEXY PRIVE SD
+SEXY PRIVE HD
+SEXY PRIVE FHD
+SEXY PRIVE HD
+SEXY PRIVE FHD
