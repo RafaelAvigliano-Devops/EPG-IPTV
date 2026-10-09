@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, timezone
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 cfg = json.load(open(os.path.join(ROOT, "config.json")))
 mapping = json.load(open(os.path.join(ROOT, "mapping.json")))
+prefer = {x.lower() for x in cfg.get("region_prefer", [])}
 BASE = os.environ["XTREAM_URL"].rstrip("/")
 USER, PASS = os.environ["XTREAM_USER"], os.environ["XTREAM_PASS"]
 
@@ -119,11 +120,15 @@ def main():
 
     # índice por nome normalizado para fallback
     by_name = []
-    for ch, _, _ in sources:
+    for ch, progs, last in sources:
         idx = {}
         for cid, (names, _) in ch.items():
+            if cid not in progs:  # canal sem programação não serve de candidato
+                continue
             for n in names + [cid]:
-                idx.setdefault(norm(n), cid)
+                k = norm(n)
+                if k not in idx or last.get(cid, "") > last.get(idx[k], ""):
+                    idx[k] = cid
         by_name.append(idx)
 
     now = datetime.now(timezone.utc)
@@ -137,6 +142,11 @@ def main():
     for eid, name in sorted(wanted.items()):
         best = None  # (last_stop, src_idx, src_id)
         major = max(group[eid], key=group[eid].get)  # nome dominante entre os streams deste ID
+        if len(group[eid]) > 1 and prefer:  # ID repetido: prioriza o canal da sua região
+            for nm in stream_names[eid]:
+                if prefer.intersection(re.findall(r"[a-z0-9]+", nm.lower())):
+                    major = norm(nm)
+                    break
         for stage in ("map", "name", "id"):
             for i, (ch, progs, last) in enumerate(sources):
                 cand = {"map": mapping.get(eid), "name": by_name[i].get(major), "id": eid}[stage]
