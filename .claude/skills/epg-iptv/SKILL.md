@@ -15,3 +15,6 @@ description: Diagnostica e mantém o EPG IPTV do Rafael (GitHub Actions + Pages)
 4. Nova fonte: **testar antes** (cobertura, data final, casamentos) e só então editar `config.json`.
 5. Mudou o script? Rode localmente (credenciais por variável de ambiente, nunca em arquivo), confira o resumo de `docs/report.txt`, peça confirmação para commit/push, depois lembre que é preciso **rodar o workflow** e conferir com `epgctl.py status`.
 6. Responda em português do Brasil, direto, com números (canais com EPG, fontes usadas).
+
+## Tarefa pendente: o link do m3u4u atualiza sozinho?
+Siga a seção "Tarefa pendente" do `AGENTS.md`: `epgctl.py summary` (linha m3u4u: grade até X) e, se o dono informar o link na sessão, `scripts/check_m3u4u.py`. Nunca grave o link.

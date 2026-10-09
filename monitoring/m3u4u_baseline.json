@@ -1,0 +1,10 @@
+{
+  "descricao": "Baseline do XML gerado pelo m3u4u (link privado do dono, NAO gravado aqui). Baixado em 2026-10-09 00:26 UTC e novamente 02:10 UTC: identico.",
+  "baixado_em_utc": "2026-10-09T00:26",
+  "bytes": 7356083,
+  "sha256": "e26f64cb389dec2e64133431928ccfa37780b136094f18020ad0a23ed8eecbca",
+  "canais": 246,
+  "programas": 20083,
+  "start_min": "20261007010000",
+  "stop_max": "20261011071300"
+}

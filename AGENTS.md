@@ -47,6 +47,14 @@ Actions (cron 0 */6 * * *, ou "Run workflow")
 - Premiere 1: nenhuma fonte pública.
 - O deploy do Pages às vezes demora alguns minutos; não é erro.
 
+## Tarefa pendente: validar se o link do m3u4u se atualiza sozinho (verificar ~10h de Brasília de 2026-10-09)
+Contexto: o secret `M3U4U_EPG_URL` é um XML gerado no site do m3u4u. Em 2026-10-09 ele ficou **byte a byte idêntico** por ~4 h (7.356.083 bytes, 246 canais, grade de 07/10 01:00 a 11/10 07:13 UTC). Baseline em `monitoring/m3u4u_baseline.json`.
+Como validar (não precisa do link):
+1. `python3 scripts/epgctl.py summary` — a linha `m3u4u` mostra "grade da fonte até DD/MM HH:MM UTC" da última execução do Actions. Se for **depois de 11/10 07:13** → o link é **vivo** (manter). Se continuar em **11/10 07:13** (e já passou de 10 h do dia 09) → **congelado**.
+2. Rode o workflow (ou espere o agendado) antes, para o report refletir o momento: `python3 scripts/epgctl.py status`.
+3. Com o link (o dono informa na sessão, nunca gravar): `M3U4U_EPG_URL='<link>' python3 scripts/check_m3u4u.py` compara com o baseline e dá o veredito.
+Decisão: vivo → manter o secret; congelado → o dono pode apagar o secret `M3U4U_EPG_URL` (o resto do projeto não depende dele). Registrar o resultado aqui.
+
 ## Operação
 ```bash
 python3 scripts/epgctl.py status            # Actions + arquivo publicado

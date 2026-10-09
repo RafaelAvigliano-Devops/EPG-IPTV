@@ -278,8 +278,9 @@ def main():
         f.write(f"Grade com >= {cfg['min_hours_ahead']}h a frente ......... {report['ok']} (IDs do provedor)\n")
         f.write(f"Grade curta/desatualizada ........... {len(report['curto'])}\n")
         f.write("\nCANAIS ENTREGUES POR FONTE (a fonte com a grade mais longa vence)\n")
-        for n in src_names:
-            f.write(f"  {n:<16} {used.get(n, 0):>5} usados\n")
+        for n, (_, _, lst) in zip(src_names, sources):
+            fim = f"{max(lst.values()):%d/%m %H:%M}" if lst else "-"
+            f.write(f"  {n:<16} {used.get(n, 0):>5} usados   grade da fonte ate {fim} UTC\n")
         f.write("\n" + "=" * 50 + "\nDETALHES\n" + "=" * 50 + "\n")
         f.write(f"\nEPG curto/desatualizado ({len(report['curto'])}):\n" + "\n".join(report["curto"]))
         f.write(f"\n\nIDs do provedor sem EPG em nenhuma fonte ({len(report['sem_epg'])}):\n" + "\n".join(report["sem_epg"]))
