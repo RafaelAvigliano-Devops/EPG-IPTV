@@ -1,5 +1,7 @@
 # EPG-IPTV — guia para qualquer IA (e para humanos)
 
+> **Leia também [HISTORICO.md](HISTORICO.md)**: o que foi feito, por quê, armadilhas aprendidas e como operar (inclui o dia 2026-10-09).
+
 Projeto que gera um **EPG (XMLTV) próprio** para uma lista IPTV Xtream Codes e o publica via **GitHub Pages**, atualizado a cada 6 horas pelo GitHub Actions. Dono: Rafael (Canoas-RS, Brasil). Idioma de trabalho: **português do Brasil**.
 
 ## Regras que nunca mudam
@@ -16,11 +18,12 @@ Projeto que gera um **EPG (XMLTV) próprio** para uma lista IPTV Xtream Codes e 
 ## Arquitetura
 ```
 Actions (cron 0 */6 * * *, ou "Run workflow")
-  build:  python scripts/build_epg.py  -> docs/{epg.xml,report.txt,channel_map.csv,channel_check.csv}
+  mitv:   (isolado, permissions: {}, continue-on-error) clona iptv-org/epg, `npm run grab` do mi.tv_br -> artefato mitv/guide.xml
+  build:  baixa o artefato (opcional) + python scripts/build_epg.py -> docs/{epg.xml,report.txt,channel_map.csv,channel_check.csv,state.json}
   deploy: upload-pages-artifact(docs) + deploy-pages   (Pages Source = "GitHub Actions"; nada do EPG é commitado)
 ```
 - `scripts/build_epg.py` (só stdlib): lê a lista Xtream (`player_api.php?action=get_live_streams`), baixa o XMLTV do provedor (`xmltv.php`) e as fontes de `config.json`, casa canais, gera o XML enxuto.
-- `config.json`: `sources` (url ou `url_env`), `min_hours_ahead`, `hours_past`(3), `days_ahead`(3), `desc_max`(120), `region_prefer` (["rs","rbs","poa","gaucha"]), `output`.
+- `config.json`: `sources` (`url`, `url_env`, `type: claro` com `city`/`days`, ou `type: file` com `path`; `names_only` indexa só por nome), `min_hours_ahead`, `hours_past`(3), `days_ahead`(3), `desc_max`(120), `region_prefer` (["rs","rbs","poa","gaucha"]), `output`.
 - `aliases` (em `config.json`): `{"nome do stream": "nome do canal na fonte"}`, para canais sem ID cujo nome não casa sozinho (ex.: "Record SP" → "RecordTV SP"). Valide o alvo nas fontes antes de incluir.
 - `mapping.json`: correções manuais `{"id_do_provedor": "id_do_canal_na_fonte"}`.
 - `scripts/epgctl.py`: diagnóstico **sem credenciais** (`status`, `channel <texto>`, `summary`).
@@ -47,8 +50,8 @@ Actions (cron 0 */6 * * *, ou "Run workflow")
 - ~890 de 2.034 canais sem EPG: 24h/desenho/série, adulto, PPV, eventos, Cine Sky, afiliadas locais pequenas. Nenhuma fonte pública tem.
 - **29 IDs repetidos pelo provedor** para canais diferentes (ex.: `globo.sp.br` = Globo SP + Sergipe; `sbt.rs.br` = SBT RJ/RS/RN). Um ID só tem uma grade → resolvido por `region_prefer` e `mapping.json`; o resto não tem solução só com EPG.
 - Variantes **4K FHDR** vêm sem ID no provedor; só funcionam se o app casar por nome.
-- SBT RS e Band RS só têm grade curta (Open-EPG).
-- Premiere 1: nenhuma fonte pública.
+- SBT RS e Band RS: resolvidos pela Claro (`mapping.json` → `claro.2091`/`claro.2063`).
+- Premiere 1: vem de Premiere Clubes via `aliases`. Premiere 2–9 só têm programa real em dia de jogo (nas outras horas todas as fontes dão título genérico).
 - O deploy do Pages às vezes demora alguns minutos; não é erro.
 
 ## Avisos automáticos (issues)
