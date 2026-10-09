@@ -14,8 +14,28 @@
       "url": "https://i.mjh.nz/PlutoTV/br.xml.gz"
     },
     {
-      "name": "m3u4u",
-      "url_env": "M3U4U_EPG_URL"
+      "name": "epgshare-br2",
+      "url": "https://epgshare01.online/epgshare01/epg_ripper_BR2.xml.gz"
+    },
+    {
+      "name": "iptv-epg-br",
+      "url": "https://iptv-epg.org/files/epg-br.xml.gz"
+    },
+    {
+      "name": "epgpw-br",
+      "url": "https://epg.pw/xmltv/epg_BR.xml"
+    },
+    {
+      "name": "open-epg-1",
+      "url": "https://www.open-epg.com/files/brazil1.xml.gz"
+    },
+    {
+      "name": "open-epg-3",
+      "url": "https://www.open-epg.com/files/brazil3.xml.gz"
+    },
+    {
+      "name": "open-epg-4",
+      "url": "https://www.open-epg.com/files/brazil4.xml.gz"
     }
   ],
   "min_hours_ahead": 24,
