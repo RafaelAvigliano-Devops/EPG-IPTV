@@ -231,6 +231,17 @@ def main():
         print("provedor xmltv falhou:", e)
     for s in cfg["sources"]:
         url = s.get("url") or os.environ.get(s.get("url_env", ""), "")
+        if s.get("type") == "file":  # guia gerado por outro job do workflow (ex.: mi.tv via iptv-org/epg); opcional
+            path = os.path.join(ROOT, s["path"])
+            if not os.path.exists(path):
+                print(f"fonte {s['name']} ignorada (arquivo {s['path']} ausente)")
+                continue
+            try:
+                sources.append(load_source(s["name"], open(path, "rb").read()))
+                src_names.append(s["name"])
+            except Exception as e:
+                print(f"fonte {s['name']} falhou:", e)
+            continue
         if s.get("type") == "claro":
             try:
                 sources.append(load_claro(s["name"], s["city"], s.get("days", 5)))
@@ -250,7 +261,7 @@ def main():
         alert("sem-fontes", "Nenhuma fonte de EPG disponível", "Todas as fontes falharam nesta execução; o EPG anterior continua publicado.", repeat=True)
         return finish(False)
     pf = prev.get("fontes", {})
-    esperadas = ["provedor"] + [x["name"] for x in cfg["sources"] if x.get("url") or x.get("type") or os.environ.get(x.get("url_env", ""))]
+    esperadas = ["provedor"] + [x["name"] for x in cfg["sources"] if x.get("url") or x.get("type") == "claro" or (x.get("type") == "file" and os.path.exists(os.path.join(ROOT, x["path"]))) or os.environ.get(x.get("url_env", ""))]
     for nome in esperadas:
         st = pf.get(nome, {})
         ok = nome in src_names
@@ -274,12 +285,13 @@ def main():
 
     # índice por nome normalizado para fallback
     by_name = []
-    for ch, progs, last in sources:
+    names_only = {x["name"] for x in cfg["sources"] if x.get("names_only")}  # fontes cujo ID é só do site (ex.: mi.tv "br#espn-1")
+    for si, (ch, progs, last) in enumerate(sources):
         idx = {}
         for cid, (names, _) in ch.items():
             if cid not in progs:  # canal sem programação não serve de candidato
                 continue
-            for n in names + [cid]:
+            for n in names + ([] if src_names[si] in names_only else [cid]):
                 k = norm(n)
                 if k not in idx or (not is_filler(progs[cid]), last.get(cid, "")) > (not is_filler(progs[idx[k]]), last.get(idx[k], "")):
                     idx[k] = cid

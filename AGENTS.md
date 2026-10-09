@@ -39,6 +39,7 @@ Actions (cron 0 */6 * * *, ou "Run workflow")
 ## Fontes (testadas, todas públicas e automáticas)
 `provedor` (xmltv.php), EPG_Share BR/BR2/PT (`epgshare01.online/epgshare01/epg_ripper_*.xml.gz`), Pluto BR (`i.mjh.nz/PlutoTV/br.xml.gz`), `iptv-epg.org/files/epg-br.xml.gz`, `epg.pw/xmltv/epg_BR.xml`, Open-EPG `brazil1/3/4.xml.gz`.
 - **Claro** (`type: claro`, cidade 190 = Canoas-RS): API Solr pública do site da Claro (`programacao.claro.com.br/gatekeeper`), 269 canais, só título+gênero, ~11 s e ~40k programas por execução (janela de `days` dias). **O WAF exige `q=` como 1º parâmetro e `:` sem codificar.** Traz as grades locais do RS (`claro.2063` Band HD, `claro.2091` SBT HD, `claro.2140` Globo RBS) usadas em `mapping.json`. IDs de saída: `claro.<id_canal>`.
+- **mi.tv** (`type: file`, `names_only`, 09/10): job `mitv` do workflow clona `iptv-org/epg`, roda `npm run grab` só do `mi.tv_br` (825 canais, ~2 min, 610 com grade, 4 dias) e entrega `mitv/guide.xml` como artefato; o job `build` o lê como fonte. **Job isolado (`permissions: {}`, sem secrets) porque executa código de terceiros**; se falhar, o build segue sem ele (`fonte mi.tv ignorada`). `names_only`: indexa só por nome de exibição, porque o ID do site (`br#espn-1`) tem sufixos de desambiguação que colidem com canais numerados (ESPN Extra virava ESPN 1). Papel: reserva/conferência (perde para fontes com grade mais longa).
 - **m3u4u** (REMOVIDO em 09/10, secret apagado; `scripts/check_m3u4u.py` e `monitoring/` ficaram obsoletos): XML gerado pelo site. Em 4 h ficou idêntico; ainda não se sabe se atualiza sozinho. Só entra se tiver a grade mais longa, então não atrapalha. Cobre canais que só ele tem (Sportynet, Premiere 1, Sony, USA Network...). A página m3u4u.com/epg é só catálogo (1.824 canais; `(m3u4u)` = base própria, `(src##)` = terceiros), sem URLs de fonte.
 - Descartadas: EPG_Share ALL_SOURCES (enorme), m3u4me (precisa de servidor 24 h; o dono não tem).
 
@@ -101,7 +102,7 @@ Fonte única do provedor estava velha → múltiplas fontes, vence a grade mais 
 - Auditoria da Claro (100 canais): grade bate com outra fonte em todos, exceto ESPN 2.
 
 ### Backlog de melhorias (ideias, nada disso está feito)
-0. **mi.tv via iptv-org/epg** como fonte de conferência no Actions (clonar shallow + grab só dos canais favoritos/regionais, converter para o formato de fontes).
+0. (feito 09/10) mi.tv via iptv-org/epg. Falta: relatório de **divergências** entre fontes (mi.tv × escolhida) no `report.txt`; considerar `vivoplay`/`clarotvmais` no mesmo job; fixar o commit do iptv-org/epg se o scraper quebrar por mudança upstream.
 1. **Painel** `index.html` no Pages com resumo, status das fontes, favoritos e problemas.
 2. **Diff entre execuções**: avisar quando um canal favorito muda de fonte ou perde programas (mudança de ID no provedor); listar "canais novos sem EPG".
 3. **Cache das fontes**: se uma fonte pública cai, reaproveitar a última cópia (hoje só se perde o canal naquela execução).

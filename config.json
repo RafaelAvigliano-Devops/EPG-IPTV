@@ -42,6 +42,12 @@
     {
       "name": "open-epg-4",
       "url": "https://www.open-epg.com/files/brazil4.xml.gz"
+    },
+    {
+      "name": "mi.tv",
+      "type": "file",
+      "path": "mitv/guide.xml",
+      "names_only": true
     }
   ],
   "min_hours_ahead": 24,

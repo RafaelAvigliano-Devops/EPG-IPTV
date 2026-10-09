@@ -12,14 +12,43 @@ concurrency:
   group: pages
   cancel-in-progress: false
 jobs:
+  # Executa código de terceiros (iptv-org/epg): job isolado, sem permissões nem segredos. Se falhar, o build segue sem o mi.tv.
+  mitv:
+    runs-on: ubuntu-latest
+    permissions: {}
+    timeout-minutes: 15
+    continue-on-error: true
+    steps:
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - name: Baixar guia mi.tv (iptv-org/epg)
+        run: |
+          git clone --depth 1 https://github.com/iptv-org/epg.git iptv-epg
+          cd iptv-epg
+          npm install --ignore-scripts --no-audit --no-fund
+          mkdir -p ../mitv
+          npm run grab --silent -- --channels=sites/mi.tv/mi.tv_br.channels.xml --days=4 --maxConnections=8 --timeout=20000 --output=../mitv/guide.xml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mitv
+          path: mitv/guide.xml
+          retention-days: 1
   build:
+    needs: mitv
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     outputs:
       publish: ${{ steps.build.outputs.publish }}
     steps:
       - uses: actions/checkout@v4
+        with: { persist-credentials: false }
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: mitv
+          path: mitv
       - name: Gerar EPG
         id: build
         env:
