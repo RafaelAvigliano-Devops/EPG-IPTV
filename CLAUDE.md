@@ -1,0 +1,1 @@
+Leia @AGENTS.md primeiro: ele descreve o projeto, as regras (nunca gravar credenciais, não commitar sem pedido), o fluxo de diagnóstico (`python3 scripts/epgctl.py ...`) e os limites conhecidos. Há uma skill em `.claude/skills/epg-iptv/`.
