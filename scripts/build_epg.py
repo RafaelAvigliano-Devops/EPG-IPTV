@@ -4,7 +4,7 @@
 Env: XTREAM_URL (ex: http://host), XTREAM_USER, XTREAM_PASS
 mapping.json: {"epg_channel_id_do_provedor": "id_na_fonte_externa"}
 """
-import copy, gzip, io, json, os, re, sys, unicodedata, urllib.request, urllib.parse
+import gzip, io, json, os, re, sys, unicodedata, urllib.request, urllib.parse
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 
@@ -43,6 +43,22 @@ def _off(s):
         return timedelta(0)
     d = timedelta(hours=int(m[2]), minutes=int(m[3]))
     return d if m[1] == "+" else -d
+
+
+KEEP = ("title", "sub-title", "desc", "category", "episode-num")
+
+
+def slim(p, out_id, start_min, start_max, desc_max):
+    """Cópia enxuta do programa dentro da janela, ou None."""
+    st, sp = ts(p.get("start", "")), ts(p.get("stop", ""))
+    if not st or not sp or sp < start_min or st > start_max:
+        return None
+    q = ET.Element("programme", {"start": p.get("start"), "stop": p.get("stop"), "channel": out_id})
+    for tag in KEEP:
+        for c in p.findall(tag)[:1]:
+            e = ET.SubElement(q, tag, c.attrib)
+            e.text = (c.text or "")[:desc_max] if tag == "desc" else c.text
+    return q if q.find("title") is not None else None
 
 
 def load_source(name, raw):
@@ -106,7 +122,8 @@ def main():
 
     now = datetime.now(timezone.utc)
     horizon = now + timedelta(hours=cfg["min_hours_ahead"])
-    cutoff = now - timedelta(days=cfg["days_past"])
+    win_min = now - timedelta(hours=cfg["hours_past"])
+    win_max = now + timedelta(days=cfg["days_ahead"])
     out = ET.Element("tv", {"generator-info-name": "EPG-IPTV"})
     out_progs, report = [], {"ok": 0, "curto": [], "sem_epg": []}
     used, used_by_id, got = {}, 0, set()
@@ -133,12 +150,9 @@ def main():
         if icon:
             ET.SubElement(c, "icon", {"src": icon})
         for p in progs[cid]:
-            st = ts(p.get("stop", ""))
-            if st and st < cutoff:
-                continue
-            p = copy.deepcopy(p)
-            p.set("channel", eid)
-            out_progs.append(p)
+            q = slim(p, eid, win_min, win_max, cfg["desc_max"])
+            if q is not None:
+                out_progs.append(q)
         if best[0] >= horizon:
             report["ok"] += 1
         else:
@@ -179,12 +193,9 @@ def main():
             if icon:
                 ET.SubElement(c, "icon", {"src": icon})
             for p in progs[cid]:
-                st = ts(p.get("stop", ""))
-                if st and st < cutoff:
-                    continue
-                p = copy.deepcopy(p)
-                p.set("channel", out_id)
-                out_progs.append(p)
+                q = slim(p, out_id, win_min, win_max, cfg["desc_max"])
+                if q is not None:
+                    out_progs.append(q)
         rows.append((s["stream_id"], s["name"], out_id, f"{stop:%d/%m %H:%M}"))
     matched = sum(1 for r in rows if r[2])
     import csv
@@ -200,10 +211,7 @@ def main():
 
     path = os.path.join(ROOT, cfg["output"])
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    buf = io.BytesIO()
-    ET.ElementTree(out).write(buf, encoding="utf-8", xml_declaration=True)
-    with gzip.open(path, "wb", 9) as f:
-        f.write(buf.getvalue())
+    ET.ElementTree(out).write(path, encoding="utf-8", xml_declaration=True)
     print(f"escrito {path}: {os.path.getsize(path)//1024} KB")
 
     siblings_n = sum(1 for r in rows if r[3] == "irmão")

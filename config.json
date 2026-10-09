@@ -39,6 +39,8 @@
     }
   ],
   "min_hours_ahead": 24,
-  "days_past": 1,
-  "output": "docs/epg.xml.gz"
+  "output": "docs/epg.xml",
+  "hours_past": 3,
+  "days_ahead": 3,
+  "desc_max": 120
 }
