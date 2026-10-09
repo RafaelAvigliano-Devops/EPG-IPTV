@@ -8,6 +8,7 @@ import gzip, io, json, os, re, sys, unicodedata, urllib.request, urllib.parse
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 
+MAXN = 30  # máx. de display-name por canal
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 cfg = json.load(open(os.path.join(ROOT, "config.json")))
 mapping = json.load(open(os.path.join(ROOT, "mapping.json")))
@@ -28,6 +29,16 @@ def norm(s):
     s = unicodedata.normalize("NFKD", s or "").encode("ascii", "ignore").decode().lower().replace("+", " plus ")
     s = re.sub(r"\b(fhd|hd|sd|uhd|4k|h265|h264|hevc|br|tv)\b|\[.*?\]|\(.*?\)", " ", s)
     return re.sub(r"[^a-z0-9]", "", s)
+
+
+QUALITY = {"fhd", "hd", "sd", "uhd", "4k", "8k", "h265", "h264", "hevc", "alt", "fhdr", "hdr", "raw"}
+
+
+def vkey(s):
+    """Chave da variante: ignora qualidade (FHD/HD/SD/4K/H265/ALT), ordem e pontuação."""
+    s = unicodedata.normalize("NFKD", s or "").encode("ascii", "ignore").decode().lower().replace("+", " plus ")
+    s = re.sub(r"\[.*?\]|\(.*?\)", " ", s)
+    return frozenset(t for t in re.findall(r"[a-z0-9]+", s) if t not in QUALITY)
 
 
 def ts(s):
@@ -136,6 +147,7 @@ def main():
     win_min = now - timedelta(hours=cfg["hours_past"])
     win_max = now + timedelta(days=cfg["days_ahead"])
     out = ET.Element("tv", {"generator-info-name": "EPG-IPTV"})
+    chan_el = {}
     out_progs, report = [], {"ok": 0, "curto": [], "sem_epg": []}
     used, used_by_id, got, choice = {}, 0, set(), {}
 
@@ -165,7 +177,8 @@ def main():
         ch, progs, _ = sources[i]
         names, icon = ch.get(cid, ([name], None))
         c = ET.SubElement(out, "channel", {"id": eid})
-        for n in list(dict.fromkeys(stream_names[eid]))[:12]:
+        chan_el[eid] = c
+        for n in list(dict.fromkeys(stream_names[eid]))[:MAXN]:
             ET.SubElement(c, "display-name").text = n
         if icon:
             ET.SubElement(c, "icon", {"src": icon})
@@ -179,17 +192,20 @@ def main():
             report["curto"].append(f"{eid} ({name}) até {best[0]:%d/%m %H:%M}")
     # --- canais sem epg_channel_id: casa por nome ---------------------
     emitted = {c.get("id") for c in out.findall("channel")}
-    chan_el = {}
     name_map = {}  # nome norm -> (cid_saida, fonte_i, cid_fonte)
     rows = []      # (stream_id, nome, categoria, tvg_id)
     siblings = {}  # nome norm -> eid (variante FHD/HD/SD/H265 do mesmo canal)
     for s in streams:
         if s.get("epg_channel_id"):
-            siblings.setdefault(norm(s["name"]), s["epg_channel_id"])
+            siblings.setdefault(vkey(s["name"]), s["epg_channel_id"])
     for s in no_id:
         key = norm(s["name"])
-        if key in siblings and siblings[key] in emitted:
-            rows.append((s["stream_id"], s["name"], siblings[key], "irmão"))
+        vk = vkey(s["name"])
+        if vk in siblings and siblings[vk] in emitted:
+            el = chan_el.get(siblings[vk])
+            if el is not None and s["name"] not in {d.text for d in el.findall("display-name")}:
+                ET.SubElement(el, "display-name").text = s["name"]
+            rows.append((s["stream_id"], s["name"], siblings[vk], "irmão"))
             continue
         if key not in name_map:
             hit = None
@@ -219,7 +235,7 @@ def main():
                 if q is not None:
                     out_progs.append(q)
         el = chan_el.get(out_id)
-        if el is not None and s["name"] not in {d.text for d in el.findall("display-name")} and len(el.findall("display-name")) < 12:
+        if el is not None and s["name"] not in {d.text for d in el.findall("display-name")} and len(el.findall("display-name")) < MAXN:
             ET.SubElement(el, "display-name").text = s["name"]
         rows.append((s["stream_id"], s["name"], out_id, f"{stop:%d/%m %H:%M}"))
     matched = sum(1 for r in rows if r[2])
