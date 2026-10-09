@@ -37,7 +37,8 @@ Actions (cron 0 */6 * * *, ou "Run workflow")
 
 ## Fontes (testadas, todas públicas e automáticas)
 `provedor` (xmltv.php), EPG_Share BR/BR2/PT (`epgshare01.online/epgshare01/epg_ripper_*.xml.gz`), Pluto BR (`i.mjh.nz/PlutoTV/br.xml.gz`), `iptv-epg.org/files/epg-br.xml.gz`, `epg.pw/xmltv/epg_BR.xml`, Open-EPG `brazil1/3/4.xml.gz`.
-- **m3u4u** (opcional, secret): XML gerado pelo site. Em 4 h ficou idêntico; ainda não se sabe se atualiza sozinho. Só entra se tiver a grade mais longa, então não atrapalha. Cobre canais que só ele tem (Sportynet, Premiere 1, Sony, USA Network...). A página m3u4u.com/epg é só catálogo (1.824 canais; `(m3u4u)` = base própria, `(src##)` = terceiros), sem URLs de fonte.
+- **Claro** (`type: claro`, cidade 190 = Canoas-RS): API Solr pública do site da Claro (`programacao.claro.com.br/gatekeeper`), 269 canais, só título+gênero, ~11 s e ~40k programas por execução (janela de `days` dias). **O WAF exige `q=` como 1º parâmetro e `:` sem codificar.** Traz as grades locais do RS (`claro.2063` Band HD, `claro.2091` SBT HD, `claro.2140` Globo RBS) usadas em `mapping.json`. IDs de saída: `claro.<id_canal>`.
+- **m3u4u** (removido em 09/10: secret apagado; opcional, secret): XML gerado pelo site. Em 4 h ficou idêntico; ainda não se sabe se atualiza sozinho. Só entra se tiver a grade mais longa, então não atrapalha. Cobre canais que só ele tem (Sportynet, Premiere 1, Sony, USA Network...). A página m3u4u.com/epg é só catálogo (1.824 canais; `(m3u4u)` = base própria, `(src##)` = terceiros), sem URLs de fonte.
 - Descartadas: EPG_Share ALL_SOURCES (enorme), m3u4me (precisa de servidor 24 h; o dono não tem).
 
 ## Limites conhecidos (não é bug do script)

@@ -137,6 +137,35 @@ def load_source(name, raw):
     return ch, progs, last
 
 
+def load_claro(name, city, days):
+    """(o WAF da Claro exige q= como 1º parâmetro) Grade da Claro (API Solr pública do site) só para a janela necessária, convertida para o formato das outras fontes."""
+    base = "https://programacao.claro.com.br/gatekeeper"
+    q = lambda path, **kw: json.loads(get(f"{base}/{path}/select?" + urllib.parse.urlencode(kw, safe=":[]*-,") + "&wt=json"))["response"]["docs"]
+    now = datetime.now(timezone.utc)
+    a, b = (now - timedelta(hours=cfg["hours_past"] + 6)).strftime("%Y-%m-%dT%H:%M:00Z"), (now + timedelta(days=days)).strftime("%Y-%m-%dT%H:%M:00Z")
+    canais = q("canal", q=f"id_cidade:{city}", rows=1000, fl="id_canal nome cn_canal", fq="-cn_canal:0")
+    ex = q("exibicao", q=f"id_cidade:{city}", rows=300000, fl="id_canal titulo genero dh_inicio dh_fim",
+           fq=f"dh_inicio:[{a} TO {b}]")
+    ch, progs, last = {}, {}, {}
+    for c in canais:
+        ch[f"claro.{c['id_canal']}"] = ([c["nome"].replace("³", "").strip()], None)
+    fmt = lambda v: v.replace("-", "").replace(":", "").replace("T", "").replace("Z", "") + "00 +0000"
+    for e in ex:
+        cid = f"claro.{e['id_canal']}"
+        if cid not in ch or not e.get("titulo"):
+            continue
+        p = ET.Element("programme", {"start": fmt(e["dh_inicio"]), "stop": fmt(e["dh_fim"]), "channel": cid})
+        ET.SubElement(p, "title").text = e["titulo"]
+        if e.get("genero"):
+            ET.SubElement(p, "category").text = e["genero"]
+        progs.setdefault(cid, []).append(p)
+        st = ts(p.get("stop"))
+        if st and (cid not in last or st > last[cid]):
+            last[cid] = st
+    print(f"[{name}] {len(ch)} canais, {sum(map(len, progs.values()))} programas")
+    return ch, progs, last
+
+
 def main():
     os.makedirs(os.path.join(ROOT, os.path.dirname(cfg["output"])), exist_ok=True)
     q = urllib.parse.urlencode({"username": USER, "password": PASS})
@@ -195,6 +224,13 @@ def main():
         print("provedor xmltv falhou:", e)
     for s in cfg["sources"]:
         url = s.get("url") or os.environ.get(s.get("url_env", ""), "")
+        if s.get("type") == "claro":
+            try:
+                sources.append(load_claro(s["name"], s["city"], s.get("days", 5)))
+                src_names.append(s["name"])
+            except Exception as e:
+                print(f"fonte {s['name']} falhou:", e)
+            continue
         if not url:
             print(f"fonte {s['name']} ignorada (sem URL)")
             continue
@@ -207,7 +243,7 @@ def main():
         alert("sem-fontes", "Nenhuma fonte de EPG disponível", "Todas as fontes falharam nesta execução; o EPG anterior continua publicado.", repeat=True)
         return finish(False)
     pf = prev.get("fontes", {})
-    esperadas = ["provedor"] + [x["name"] for x in cfg["sources"] if x.get("url") or os.environ.get(x.get("url_env", ""))]
+    esperadas = ["provedor"] + [x["name"] for x in cfg["sources"] if x.get("url") or x.get("type") or os.environ.get(x.get("url_env", ""))]
     for nome in esperadas:
         st = pf.get(nome, {})
         ok = nome in src_names

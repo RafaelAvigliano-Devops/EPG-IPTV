@@ -2,6 +2,12 @@
   "_comment": "Fontes públicas de EPG, em ordem de prioridade. Para cada canal vence a fonte com a grade mais longa (mais futuro).",
   "sources": [
     {
+      "name": "claro",
+      "type": "claro",
+      "city": 190,
+      "days": 6
+    },
+    {
       "name": "epgshare-br",
       "url": "https://epgshare01.online/epgshare01/epg_ripper_BR1.xml.gz"
     },
@@ -36,10 +42,6 @@
     {
       "name": "open-epg-4",
       "url": "https://www.open-epg.com/files/brazil4.xml.gz"
-    },
-    {
-      "name": "m3u4u",
-      "url_env": "M3U4U_EPG_URL"
     }
   ],
   "min_hours_ahead": 24,
@@ -84,6 +86,7 @@
     "GLOBO TV GAZETA ES VITORIA": "Rede Gazeta",
     "GLOBO TV GAZETA DE ALAGOAS": "TV Gazeta Alagoas",
     "TV GAZETA MACEIO": "TV Gazeta Alagoas",
-    "GAZETA SUL ESPIRITO SANTO": "TV Gazeta Sul"
+    "GAZETA SUL ESPIRITO SANTO": "TV Gazeta Sul",
+    "GLOBO RBS TV PASSO FUNDO": "Globo (RBS)"
   }
 }
