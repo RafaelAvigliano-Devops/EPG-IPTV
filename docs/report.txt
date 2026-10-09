@@ -1,13 +1,37 @@
-Gerado em 2026-10-09 00:49 UTC
-Canais com EPG >= 24h à frente: 269
+RESUMO - gerado em 2026-10-09 00:54 UTC
+==================================================
+Canais na lista do provedor ........ 2034
+  Com EPG ........................... 1100
+    por ID do provedor .............. 1000 (269 IDs unicos)
+    por nome (sem ID no provedor) ... 97
+    por variante irma (FHD/HD/SD) ... 3
+  Sem EPG em nenhuma fonte .......... 934
+Grade com >= 24h a frente ......... 269 (IDs do provedor)
+Grade curta/desatualizada ........... 0
+
+CANAIS ENTREGUES POR FONTE (a fonte com a grade mais longa vence)
+  provedor           195 usados
+  epgshare-br          0 usados
+  epgshare-pt          1 usados
+  pluto-br             6 usados
+  epgshare-br2         6 usados
+  iptv-epg-br        151 usados
+  epgpw-br             0 usados
+  open-epg-1           3 usados
+  open-epg-3           4 usados
+  open-epg-4           0 usados
+
+==================================================
+DETALHES
+==================================================
 
 EPG curto/desatualizado (0):
 
 
-Sem EPG em nenhuma fonte (0):
+IDs do provedor sem EPG em nenhuma fonte (0):
 
 
-Canais sem epg_channel_id: 100 casados por nome (ver channel_map.csv); sem EPG (934):
+Canais sem epg_channel_id e sem EPG (934):
 RECORD SP FHD
 RECORD SP FHD [H265]
 RECORD SP HD

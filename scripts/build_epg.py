@@ -76,9 +76,10 @@ def main():
             no_id.append(s)
     print(f"{len(streams)} canais; {len(wanted)} ids de EPG; {len(no_id)} sem id")
 
-    sources = []
+    sources, src_names = [], []
     try:
         sources.append(load_source("provedor", get(f"{BASE}/xmltv.php?{q}")))
+        src_names.append("provedor")
     except Exception as e:
         print("provedor xmltv falhou:", e)
     for s in cfg["sources"]:
@@ -88,6 +89,7 @@ def main():
             continue
         try:
             sources.append(load_source(s["name"], get(url)))
+            src_names.append(s["name"])
         except Exception as e:
             print(f"fonte {s['name']} falhou:", e)
     if not sources:
@@ -107,6 +109,7 @@ def main():
     cutoff = now - timedelta(days=cfg["days_past"])
     out = ET.Element("tv", {"generator-info-name": "EPG-IPTV"})
     out_progs, report = [], {"ok": 0, "curto": [], "sem_epg": []}
+    used, used_by_id, got = {}, 0, set()
 
     for eid, name in sorted(wanted.items()):
         best = None  # (last_stop, src_idx, src_id)
@@ -120,6 +123,9 @@ def main():
             report["sem_epg"].append(f"{eid} ({name})")
             continue
         _, i, cid = best
+        used[src_names[i]] = used.get(src_names[i], 0) + 1
+        used_by_id += 1
+        got.add(eid)
         ch, progs, _ = sources[i]
         names, icon = ch.get(cid, ([name], None))
         c = ET.SubElement(out, "channel", {"id": eid})
@@ -161,6 +167,7 @@ def main():
             rows.append((s["stream_id"], s["name"], "", ""))
             continue
         i, cid, stop = hit
+        used[src_names[i]] = used.get(src_names[i], 0) + 1
         out_id = cid
         if out_id not in emitted:
             emitted.add(out_id)
@@ -197,13 +204,29 @@ def main():
         f.write(buf.getvalue())
     print(f"escrito {path}: {os.path.getsize(path)//1024} KB")
 
+    siblings_n = sum(1 for r in rows if r[3] == "irmão")
+    by_name_n = matched - siblings_n
+    streams_by_id = sum(1 for x in streams if x.get("epg_channel_id") in got)
+    with_epg = streams_by_id + matched
     with open(os.path.join(ROOT, "docs", "report.txt"), "w") as f:
-        f.write(f"Gerado em {now:%Y-%m-%d %H:%M} UTC\n")
-        f.write(f"Canais com EPG >= {cfg['min_hours_ahead']}h à frente: {report['ok']}\n")
+        f.write(f"RESUMO - gerado em {now:%Y-%m-%d %H:%M} UTC\n")
+        f.write("=" * 50 + "\n")
+        f.write(f"Canais na lista do provedor ........ {len(streams)}\n")
+        f.write(f"  Com EPG ........................... {with_epg}\n")
+        f.write(f"    por ID do provedor .............. {streams_by_id} ({used_by_id} IDs unicos)\n")
+        f.write(f"    por nome (sem ID no provedor) ... {by_name_n}\n")
+        f.write(f"    por variante irma (FHD/HD/SD) ... {siblings_n}\n")
+        f.write(f"  Sem EPG em nenhuma fonte .......... {len(streams) - with_epg}\n")
+        f.write(f"Grade com >= {cfg['min_hours_ahead']}h a frente ......... {report['ok']} (IDs do provedor)\n")
+        f.write(f"Grade curta/desatualizada ........... {len(report['curto'])}\n")
+        f.write("\nCANAIS ENTREGUES POR FONTE (a fonte com a grade mais longa vence)\n")
+        for n in src_names:
+            f.write(f"  {n:<16} {used.get(n, 0):>5} usados\n")
+        f.write("\n" + "=" * 50 + "\nDETALHES\n" + "=" * 50 + "\n")
         f.write(f"\nEPG curto/desatualizado ({len(report['curto'])}):\n" + "\n".join(report["curto"]))
-        f.write(f"\n\nSem EPG em nenhuma fonte ({len(report['sem_epg'])}):\n" + "\n".join(report["sem_epg"]))
-        f.write(f"\n\nCanais sem epg_channel_id: {matched} casados por nome (ver channel_map.csv); sem EPG ({len(no_id_names)}):\n" + "\n".join(no_id_names))
-    print(open(os.path.join(ROOT, "docs", "report.txt")).read()[:600])
+        f.write(f"\n\nIDs do provedor sem EPG em nenhuma fonte ({len(report['sem_epg'])}):\n" + "\n".join(report["sem_epg"]))
+        f.write(f"\n\nCanais sem epg_channel_id e sem EPG ({len(no_id_names)}):\n" + "\n".join(no_id_names))
+    print(open(os.path.join(ROOT, "docs", "report.txt")).read()[:1100])
 
 
 if __name__ == "__main__":
