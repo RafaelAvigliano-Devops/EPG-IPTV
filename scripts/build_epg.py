@@ -84,11 +84,16 @@ def main():
     q = urllib.parse.urlencode({"username": USER, "password": PASS})
     streams = json.loads(get(f"{BASE}/player_api.php?{q}&action=get_live_streams"))
     wanted = {}  # epg id -> nome
+    group = {}   # epg id -> {nome normalizado: qtd}
+    stream_names = {}  # id de saída -> nomes de streams (para o display-name)
     no_id = []   # streams sem epg_channel_id
     for s in streams:
         eid = s.get("epg_channel_id")
         if eid:
             wanted.setdefault(eid, s["name"])
+            g = group.setdefault(eid, {})
+            g[norm(s["name"])] = g.get(norm(s["name"]), 0) + 1
+            stream_names.setdefault(eid, []).append(s["name"])
         else:
             no_id.append(s)
     print(f"{len(streams)} canais; {len(wanted)} ids de EPG; {len(no_id)} sem id")
@@ -127,16 +132,18 @@ def main():
     win_max = now + timedelta(days=cfg["days_ahead"])
     out = ET.Element("tv", {"generator-info-name": "EPG-IPTV"})
     out_progs, report = [], {"ok": 0, "curto": [], "sem_epg": []}
-    used, used_by_id, got = {}, 0, set()
+    used, used_by_id, got, choice = {}, 0, set(), {}
 
     for eid, name in sorted(wanted.items()):
         best = None  # (last_stop, src_idx, src_id)
-        for i, (ch, progs, last) in enumerate(sources):
-            for cand in (mapping.get(eid), eid, by_name[i].get(norm(name))):
-                if cand and cand in progs:
-                    if best is None or last.get(cand, now) > best[0]:
-                        best = (last.get(cand, now), i, cand)
-                    break
+        major = max(group[eid], key=group[eid].get)  # nome dominante entre os streams deste ID
+        for stage in ("map", "name", "id"):
+            for i, (ch, progs, last) in enumerate(sources):
+                cand = {"map": mapping.get(eid), "name": by_name[i].get(major), "id": eid}[stage]
+                if cand and cand in progs and (best is None or last.get(cand, now) > best[0]):
+                    best = (last.get(cand, now), i, cand)
+            if best:
+                break
         if not best:
             report["sem_epg"].append(f"{eid} ({name})")
             continue
@@ -144,10 +151,12 @@ def main():
         used[src_names[i]] = used.get(src_names[i], 0) + 1
         used_by_id += 1
         got.add(eid)
+        choice[eid] = (src_names[i], cid, (sources[i][0].get(cid, ([""],))[0] or [""])[0])
         ch, progs, _ = sources[i]
         names, icon = ch.get(cid, ([name], None))
         c = ET.SubElement(out, "channel", {"id": eid})
-        ET.SubElement(c, "display-name").text = name
+        for n in list(dict.fromkeys(stream_names[eid]))[:12]:
+            ET.SubElement(c, "display-name").text = n
         if icon:
             ET.SubElement(c, "icon", {"src": icon})
         for p in progs[cid]:
@@ -160,6 +169,7 @@ def main():
             report["curto"].append(f"{eid} ({name}) até {best[0]:%d/%m %H:%M}")
     # --- canais sem epg_channel_id: casa por nome ---------------------
     emitted = {c.get("id") for c in out.findall("channel")}
+    chan_el = {}
     name_map = {}  # nome norm -> (cid_saida, fonte_i, cid_fonte)
     rows = []      # (stream_id, nome, categoria, tvg_id)
     siblings = {}  # nome norm -> eid (variante FHD/HD/SD/H265 do mesmo canal)
@@ -190,6 +200,7 @@ def main():
             ch, progs, _ = sources[i]
             names, icon = ch.get(cid, ([s["name"]], None))
             c = ET.SubElement(out, "channel", {"id": out_id})
+            chan_el[out_id] = c
             ET.SubElement(c, "display-name").text = names[0] if names else s["name"]
             if icon:
                 ET.SubElement(c, "icon", {"src": icon})
@@ -197,6 +208,9 @@ def main():
                 q = slim(p, out_id, win_min, win_max, cfg["desc_max"])
                 if q is not None:
                     out_progs.append(q)
+        el = chan_el.get(out_id)
+        if el is not None and s["name"] not in {d.text for d in el.findall("display-name")} and len(el.findall("display-name")) < 12:
+            ET.SubElement(el, "display-name").text = s["name"]
         rows.append((s["stream_id"], s["name"], out_id, f"{stop:%d/%m %H:%M}"))
     matched = sum(1 for r in rows if r[2])
     import csv
@@ -215,6 +229,13 @@ def main():
     ET.ElementTree(out).write(path, encoding="utf-8", xml_declaration=True)
     print(f"escrito {path}: {os.path.getsize(path)//1024} KB")
 
+    import csv as _csv
+    with open(os.path.join(ROOT, "docs", "channel_check.csv"), "w", newline="") as f:
+        w = _csv.writer(f)
+        w.writerow(["epg_id_provedor", "nome_no_provedor", "fonte", "id_na_fonte", "nome_na_fonte"])
+        for eid, nm in sorted(wanted.items()):
+            if eid in choice:
+                w.writerow([eid, nm, *choice[eid]])
     siblings_n = sum(1 for r in rows if r[3] == "irmão")
     by_name_n = matched - siblings_n
     streams_by_id = sum(1 for x in streams if x.get("epg_channel_id") in got)
