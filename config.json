@@ -1,5 +1,5 @@
 {
-  "_comment": "Fontes p\u00fablicas de EPG, em ordem de prioridade. Para cada canal vence a fonte com a grade mais longa (mais futuro).",
+  "_comment": "Fontes públicas de EPG, em ordem de prioridade. Para cada canal vence a fonte com a grade mais longa (mais futuro).",
   "sources": [
     {
       "name": "epgshare-br",
@@ -64,5 +64,26 @@
     "band rs",
     "sbt rs",
     "record rs"
-  ]
+  ],
+  "aliases": {
+    "Record SP": "RecordTV SP",
+    "BBC": "BBC World News",
+    "NSPORTS 1": "NSports",
+    "USA NETWORK": "USA",
+    "CANAL SONY": "Sony",
+    "PREMIERE 1": "Premiere Clubes",
+    "PREMIERE 1 -": "Premiere Clubes",
+    "Sportynet 01": "SportyNet",
+    "Sportynet 04": "SportyNet +",
+    "(00) |US| NFL Network": "NFL Channel",
+    "RECORD GO": "Record TV Goiás",
+    "RECORD BH": "Record TV Minas",
+    "RECORD NDTV FLORIPA": "Record TV Florianopolis",
+    "GLOBO RPC MARINGA": "RPC Maringá",
+    "GLOBO TV LIBERAL BELEM": "TV Liberal",
+    "GLOBO TV GAZETA ES VITORIA": "Rede Gazeta",
+    "GLOBO TV GAZETA DE ALAGOAS": "TV Gazeta Alagoas",
+    "TV GAZETA MACEIO": "TV Gazeta Alagoas",
+    "GAZETA SUL ESPIRITO SANTO": "TV Gazeta Sul"
+  }
 }

@@ -21,6 +21,7 @@ Actions (cron 0 */6 * * *, ou "Run workflow")
 ```
 - `scripts/build_epg.py` (só stdlib): lê a lista Xtream (`player_api.php?action=get_live_streams`), baixa o XMLTV do provedor (`xmltv.php`) e as fontes de `config.json`, casa canais, gera o XML enxuto.
 - `config.json`: `sources` (url ou `url_env`), `min_hours_ahead`, `hours_past`(3), `days_ahead`(3), `desc_max`(120), `region_prefer` (["rs","rbs","poa","gaucha"]), `output`.
+- `aliases` (em `config.json`): `{"nome do stream": "nome do canal na fonte"}`, para canais sem ID cujo nome não casa sozinho (ex.: "Record SP" → "RecordTV SP"). Valide o alvo nas fontes antes de incluir.
 - `mapping.json`: correções manuais `{"id_do_provedor": "id_do_canal_na_fonte"}`.
 - `scripts/epgctl.py`: diagnóstico **sem credenciais** (`status`, `channel <texto>`, `summary`).
 - `docs/` é **gerado** e está no `.gitignore` (existe só no artefato do Pages).
@@ -47,7 +48,7 @@ Actions (cron 0 */6 * * *, ou "Run workflow")
 - Premiere 1: nenhuma fonte pública.
 - O deploy do Pages às vezes demora alguns minutos; não é erro.
 
-## Tarefa pendente: validar se o link do m3u4u se atualiza sozinho (verificar ~10h de Brasília de 2026-10-09)
+## Tarefa pendente (OBSOLETA em 2026-10-09: dono removeu o secret `M3U4U_EPG_URL`; Sony/USA/Premiere 1/Sportynet 01 e 04 passaram a vir de fontes públicas via `aliases`): validar se o link do m3u4u se atualiza sozinho (verificar ~10h de Brasília de 2026-10-09)
 Contexto: o secret `M3U4U_EPG_URL` é um XML gerado no site do m3u4u. Em 2026-10-09 ele ficou **byte a byte idêntico** por ~4 h (7.356.083 bytes, 246 canais, grade de 07/10 01:00 a 11/10 07:13 UTC). Baseline em `monitoring/m3u4u_baseline.json`.
 Como validar (não precisa do link):
 1. `python3 scripts/epgctl.py summary` — a linha `m3u4u` mostra "grade da fonte até DD/MM HH:MM UTC" da última execução do Actions. Se for **depois de 11/10 07:13** → o link é **vivo** (manter). Se continuar em **11/10 07:13** (e já passou de 10 h do dia 09) → **congelado**.

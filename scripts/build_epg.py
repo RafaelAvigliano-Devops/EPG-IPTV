@@ -226,6 +226,9 @@ def main():
             alert(f"fonte-parada-{nome}", f"Fonte de EPG '{nome}' parada",
                   f"A grade dessa fonte termina em {fim:%d/%m %H:%M} UTC" if fim else "Fonte sem programação.")
 
+    # apelidos: nome do stream (norm) -> nome do canal na fonte (norm), p/ nomes que o casamento automático não liga
+    alias = {norm(k): norm(v) for k, v in cfg.get("aliases", {}).items()}
+
     # índice por nome normalizado para fallback
     by_name = []
     for ch, progs, last in sources:
@@ -256,6 +259,7 @@ def main():
                 if prefer.intersection(re.findall(r"[a-z0-9]+", nm.lower())):
                     major = norm(nm)
                     break
+        major = alias.get(major, major)
         for stage in ("map", "name", "id"):
             for i, (ch, progs, last) in enumerate(sources):
                 cand = {"map": mapping.get(eid), "name": by_name[i].get(major), "id": eid}[stage]
@@ -297,6 +301,7 @@ def main():
             siblings.setdefault(vkey(s["name"]), s["epg_channel_id"])
     for s in no_id:
         key = norm(s["name"])
+        key = alias.get(key, key)
         vk = vkey(s["name"])
         if vk in siblings and siblings[vk] in emitted:
             el = chan_el.get(siblings[vk])
