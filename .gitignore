@@ -1,3 +1,5 @@
 __pycache__/
 *.tmp
 .env
+# gerado a cada execução e publicado pelo Pages (não vai para o git)
+docs/
