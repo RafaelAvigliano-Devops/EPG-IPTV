@@ -36,6 +36,10 @@
     {
       "name": "open-epg-4",
       "url": "https://www.open-epg.com/files/brazil4.xml.gz"
+    },
+    {
+      "name": "m3u4u",
+      "url_env": "M3U4U_EPG_URL"
     }
   ],
   "min_hours_ahead": 24,
