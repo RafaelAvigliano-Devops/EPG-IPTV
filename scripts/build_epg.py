@@ -80,6 +80,7 @@ def load_source(name, raw):
 
 
 def main():
+    os.makedirs(os.path.join(ROOT, os.path.dirname(cfg["output"])), exist_ok=True)
     q = urllib.parse.urlencode({"username": USER, "password": PASS})
     streams = json.loads(get(f"{BASE}/player_api.php?{q}&action=get_live_streams"))
     wanted = {}  # epg id -> nome
