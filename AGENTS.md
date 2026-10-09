@@ -96,6 +96,7 @@ Fonte única do provedor estava velha → múltiplas fontes, vence a grade mais 
 
 ### Fontes em tempo real avaliadas (09/10)
 - **iptv-org/epg** (ativo, commit 08/10): scrapers de sites; roda no Actions com Node (`npm install --ignore-scripts` ≈ 7 s, `npm run grab -- --channels=<xml> --days=3` ≈ 4 s para 10 canais). Sites BR: `mi.tv` (547 canais), `guiadetv.com` (123), `meuguia.tv` (101), `clarotvmais.com.br` (158), `vivoplay.com.br` (361). Os guias prontos `iptv-org.github.io/epg/guides/br/*.xml` estão **fora do ar (404)**; `limaalef/BrazilTVEPG` parado desde 19/09; `iptv-com/epg` parado desde 03/2026.
+- **Teste real dos scrapers (09/10, 3 dias, `--maxConnections=10`):** `mi.tv` OK (10 canais em 4 s; 825 no BR), `vivoplay` OK (157 canais com grade, 18 mil programas, 56 s, até 13/10), `clarotvmais` OK (150 canais, 15,6 mil programas, 31 s, até 12/10), **`guiadetv.com` e `meuguia.tv` quebrados (0 programas, site mudou)**. Rodar no Actions é viável (Node + `npm install --ignore-scripts` ≈ 7 s + clone raso ≈ 157 MB).
 - **Nenhum desses sites cobre os canais que ainda estão vazios** (só "Premiere 2 -"): os 499 nomes restantes são séries/desenhos em loop 24h e afiliadas pequenas. Servem como **conferência independente e redundância**, não para ampliar cobertura. mi.tv confirmou o padrão da ESPN 2.
 - Auditoria da Claro (100 canais): grade bate com outra fonte em todos, exceto ESPN 2.
 
