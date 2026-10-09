@@ -90,11 +90,17 @@ Fonte única do provedor estava velha → múltiplas fontes, vence a grade mais 
 - Diagnóstico de duplicatas (09/10): grades idênticas entre canais da mesma rede (afiliadas Globo/RPC/Anhanguera/NSC, Record/Atalaia, SBT/SBT Cuiabá) são esperadas; os demais casos eram placeholders (corrigidos).
 - Fontes avaliadas e **descartadas**: `epg.lat/files/br.xml.gz` (arquivo de 20/09, espelho do EPG_Share; o diretório ge.m3uiptv.com só lista links), `globetvapp/epg` (parado desde dez/2025), open-epg `brazil2/5` (0 canais novos), Plex/Samsung i.mjh.nz (404), Roku (só 24h).
 - Sem solução em fonte pública: afiliadas regionais pequenas (Globo Rede Amazônica, EPTV Araraquara, Band RN, SBT regionais), Fórmula 1, Agro Canal, Sportynet 02/03 (só o m3u4u tinha), Gazeta Alagoas/Norte ES.
-- **Pendência do dono 1:** ver na TV o que a **ESPN 2** exibe agora. Hoje ESPN 2 = ESPN deslocada 3 h em iptv-epg-br/epgshare-br/open-epg-3; epgshare-br2 e a Claro ("ESPN 2 HD" = conteúdo que 4 fontes chamam de ESPN 3) divergem. Com a resposta, fixar a fonte em `mapping.json` (`espn.2.br`, `espn.3.br`).
+- **ESPN 2 (resolvido 09/10, aguardando conferência do dono):** `mapping.json` fixa `espn.2.br` → `ESPN2.br` (iptv-epg-br). Quatro fontes (iptv-epg-br, epgshare-br, open-epg-3 e mi.tv, onde se chama "ESPN") concordam que a ESPN 2 repete a ESPN com ~3 h de atraso (SportsCenter/NFL/ESPN League). A Claro rotula "ESPN 2 HD" o conteúdo que as outras chamam de ESPN 3 → **não usar Claro para ESPN 2/3** (sem o mapeamento, ESPN 2 e ESPN 3 saíam idênticas). Se na TV a ESPN 2 for outra coisa, ajustar o mapeamento.
 - **Pendência do dono 2:** exemplos de variantes que ainda aparecem erradas no TVLOK.
 - Conferir após o próximo run: issue `fonte-parada-pluto-br` (esperada, grade termina em 10/10), conta do provedor vence em 28/10/2026 (aviso desde 13/10), e se a linha `claro` aparece com grade até ~15/10.
 
+### Fontes em tempo real avaliadas (09/10)
+- **iptv-org/epg** (ativo, commit 08/10): scrapers de sites; roda no Actions com Node (`npm install --ignore-scripts` ≈ 7 s, `npm run grab -- --channels=<xml> --days=3` ≈ 4 s para 10 canais). Sites BR: `mi.tv` (547 canais), `guiadetv.com` (123), `meuguia.tv` (101), `clarotvmais.com.br` (158), `vivoplay.com.br` (361). Os guias prontos `iptv-org.github.io/epg/guides/br/*.xml` estão **fora do ar (404)**; `limaalef/BrazilTVEPG` parado desde 19/09; `iptv-com/epg` parado desde 03/2026.
+- **Nenhum desses sites cobre os canais que ainda estão vazios** (só "Premiere 2 -"): os 499 nomes restantes são séries/desenhos em loop 24h e afiliadas pequenas. Servem como **conferência independente e redundância**, não para ampliar cobertura. mi.tv confirmou o padrão da ESPN 2.
+- Auditoria da Claro (100 canais): grade bate com outra fonte em todos, exceto ESPN 2.
+
 ### Backlog de melhorias (ideias, nada disso está feito)
+0. **mi.tv via iptv-org/epg** como fonte de conferência no Actions (clonar shallow + grab só dos canais favoritos/regionais, converter para o formato de fontes).
 1. **Painel** `index.html` no Pages com resumo, status das fontes, favoritos e problemas.
 2. **Diff entre execuções**: avisar quando um canal favorito muda de fonte ou perde programas (mudança de ID no provedor); listar "canais novos sem EPG".
 3. **Cache das fontes**: se uma fonte pública cai, reaproveitar a última cópia (hoje só se perde o canal naquela execução).
