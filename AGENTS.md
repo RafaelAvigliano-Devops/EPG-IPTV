@@ -32,6 +32,7 @@ Actions (cron 0 */6 * * *, ou "Run workflow")
 2. Etapas, na ordem: `mapping.json` → casamento **por nome** nas fontes → casamento por **ID** igual. Em cada etapa vence a fonte com a **grade mais longa** (maior `stop`).
 3. Streams **sem** `epg_channel_id`: irmão de variante (`vkey`: ignora qualidade e ordem das palavras) → nome nas fontes → senão "sem EPG".
 4. O canal sai no XML com o **ID do provedor** (para o app casar por ID) e com todos os nomes dos streams como `display-name` (até 30) para apps que casam por nome.
+- **Grade genérica perde para grade real:** `is_filler()` = ≤ 2 títulos distintos (ex.: "Premiere 2" o dia todo). Candidato com programação real vence mesmo com grade mais curta. Programas "No Data" (iptv-epg.org) são descartados na leitura da fonte (canal fica sem grade se for a única). Isso corrigiu Premiere 2/3/4, Canal do Boi/Rural, Rede Gospel, RIT e TV Aparecida, que mostravam o mesmo vazio.
 - Programas são copiados (`slim`) só na janela [agora-3h, agora+3d] e só com title/sub-title/desc(120)/category/episode-num.
 - Índice por nome ignora canais sem programação (já houve canal homônimo vazio escondendo o certo).
 
@@ -94,6 +95,8 @@ Fonte única do provedor estava velha → múltiplas fontes, vence a grade mais 
 - Avisos por issue implementados (seção acima); o passo JavaScript do workflow ainda **não foi visto rodando** no Actions: na primeira execução depois do push, conferir se o passo "Avisos por issue" ficou verde e se as issues (label `epg-alerta`) fazem sentido. Esperado: aviso de `fonte-parada-pluto-br` (grade termina em 09/10); a conta vence em 28/10/2026 (aviso a partir de 13/10).
 - Pendência: validar se o link do m3u4u se atualiza (seção "Tarefa pendente", ~10 h de 09/10).
 - Pendência do dono: mandar exemplos concretos de variantes (ex.: "ESPN 2") que ainda aparecem erradas no TVLOK; os dados do XML mostram todas as variantes com a mesma grade, então pode ser comportamento do app.
+
+- **Aberto (09/10):** ESPN 2 = ESPN deslocada 3 h em iptv-epg-br/epgshare-br/open-epg-3; epgshare-br2 e a Claro ("ESPN 2 HD" = conteúdo que 4 fontes chamam de ESPN 3) divergem. Falta o dono confirmar na TV o que a ESPN 2 exibe para escolher a fonte (`mapping.json`: `espn.2.br`).
 
 ### Backlog de melhorias (ideias, nada disso está feito)
 1. **Painel** `index.html` no Pages com resumo, status das fontes, favoritos e problemas.

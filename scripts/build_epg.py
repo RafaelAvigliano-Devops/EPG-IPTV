@@ -129,12 +129,19 @@ def load_source(name, raw):
         ch[c.get("id")] = (names, icon.get("src") if icon is not None else None)
     for p in root.iter("programme"):
         cid = p.get("channel")
+        if (p.findtext("title") or "").strip().lower() == "no data":  # vazio da iptv-epg.org: canal sem grade, não candidato
+            continue
         progs.setdefault(cid, []).append(p)
         st = ts(p.get("stop", ""))
         if st and (cid not in last or st > last[cid]):
             last[cid] = st
     print(f"[{name}] {len(ch)} canais, {sum(map(len, progs.values()))} programas")
     return ch, progs, last
+
+
+def is_filler(progs):
+    """Grade genérica (poucos títulos distintos, ex.: 'Premiere 2' o dia todo): perde para grade com programação real."""
+    return len({(p.findtext("title") or "").strip().lower() for p in progs}) <= 2
 
 
 def load_claro(name, city, days):
@@ -274,7 +281,7 @@ def main():
                 continue
             for n in names + [cid]:
                 k = norm(n)
-                if k not in idx or last.get(cid, "") > last.get(idx[k], ""):
+                if k not in idx or (not is_filler(progs[cid]), last.get(cid, "")) > (not is_filler(progs[idx[k]]), last.get(idx[k], "")):
                     idx[k] = cid
         by_name.append(idx)
 
@@ -299,14 +306,17 @@ def main():
         for stage in ("map", "name", "id"):
             for i, (ch, progs, last) in enumerate(sources):
                 cand = {"map": mapping.get(eid), "name": by_name[i].get(major), "id": eid}[stage]
-                if cand and cand in progs and (best is None or last.get(cand, now) > best[0]):
-                    best = (last.get(cand, now), i, cand)
+                if cand and cand in progs:
+                    rank = (not is_filler(progs[cand]), last.get(cand, now))
+                    if best is None or rank > best[0]:
+                        best = (rank, i, cand)
             if best:
                 break
         if not best:
             report["sem_epg"].append(f"{eid} ({name})")
             continue
         _, i, cid = best
+        stop_best = best[0][1]
         used[src_names[i]] = used.get(src_names[i], 0) + 1
         used_by_id += 1
         got.add(eid)
@@ -323,10 +333,10 @@ def main():
             q = slim(p, eid, win_min, win_max, cfg["desc_max"])
             if q is not None:
                 out_progs.append(q)
-        if best[0] >= horizon:
+        if stop_best >= horizon:
             report["ok"] += 1
         else:
-            report["curto"].append(f"{eid} ({name}) até {best[0]:%d/%m %H:%M}")
+            report["curto"].append(f"{eid} ({name}) até {stop_best:%d/%m %H:%M}")
     # --- canais sem epg_channel_id: casa por nome ---------------------
     emitted = {c.get("id") for c in out.findall("channel")}
     name_map = {}  # nome norm -> (cid_saida, fonte_i, cid_fonte)
@@ -349,14 +359,14 @@ def main():
             hit = None
             for i, (ch, progs, last) in enumerate(sources):
                 cid = by_name[i].get(key)
-                if cid and cid in progs and (hit is None or last.get(cid, now) > hit[2]):
-                    hit = (i, cid, last.get(cid, now))
+                if cid and cid in progs and (hit is None or (not is_filler(progs[cid]), last.get(cid, now)) > (hit[3], hit[2])):
+                    hit = (i, cid, last.get(cid, now), not is_filler(progs[cid]))
             name_map[key] = hit
         hit = name_map[key]
         if not hit:
             rows.append((s["stream_id"], s["name"], "", ""))
             continue
-        i, cid, stop = hit
+        i, cid, stop, _ = hit
         used[src_names[i]] = used.get(src_names[i], 0) + 1
         out_id = cid
         if out_id not in emitted:
