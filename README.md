@@ -7,11 +7,11 @@ EPG (guia de programação XMLTV) próprio para lista IPTV Xtream, gerado e publ
 No app (ex.: TVLOK) coloque esse link em **EPG URL override**.
 
 ## Como funciona
-O Actions lê a lista do provedor, baixa o EPG do provedor e de fontes públicas, casa os canais (por nome e por ID, priorizando a região) e publica um `epg.xml` enxuto no GitHub Pages. Detalhes técnicos, limites e decisões em [AGENTS.md](AGENTS.md).
+O Actions lê a lista do provedor, baixa o EPG do provedor, de fontes públicas e da grade da Claro (Canoas-RS), casa os canais (por nome e por ID, priorizando a região) e publica um `epg.xml` enxuto no GitHub Pages. Detalhes técnicos, limites e decisões em [AGENTS.md](AGENTS.md).
 
 ## Configuração (uma vez)
 1. Settings → Pages → Source: **GitHub Actions**.
-2. Settings → Secrets and variables → Actions: `XTREAM_URL`, `XTREAM_USER`, `XTREAM_PASS` (e opcional `M3U4U_EPG_URL`).
+2. Settings → Secrets and variables → Actions: `XTREAM_URL`, `XTREAM_USER`, `XTREAM_PASS` .
 3. Actions → *Atualizar EPG* → *Run workflow*.
 
 ## Avisos
@@ -26,4 +26,4 @@ python3 scripts/epgctl.py summary
 Relatórios publicados: `report.txt`, `channel_map.csv`, `channel_check.csv`.
 
 ## Arquivos
-`scripts/build_epg.py` (gerador) · `config.json` (fontes e janela) · `mapping.json` (correções manuais) · `.github/workflows/epg.yml` · `.claude/skills/epg-iptv/` (skill para Claude Code).
+`scripts/build_epg.py` (gerador) · `config.json` (fontes e janela) · `mapping.json` (correções por ID) · `aliases` em `config.json` (correções por nome) · `.github/workflows/epg.yml` · `.claude/skills/epg-iptv/` (skill para Claude Code).

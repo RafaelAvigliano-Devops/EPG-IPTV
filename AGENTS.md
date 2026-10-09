@@ -39,7 +39,7 @@ Actions (cron 0 */6 * * *, ou "Run workflow")
 ## Fontes (testadas, todas públicas e automáticas)
 `provedor` (xmltv.php), EPG_Share BR/BR2/PT (`epgshare01.online/epgshare01/epg_ripper_*.xml.gz`), Pluto BR (`i.mjh.nz/PlutoTV/br.xml.gz`), `iptv-epg.org/files/epg-br.xml.gz`, `epg.pw/xmltv/epg_BR.xml`, Open-EPG `brazil1/3/4.xml.gz`.
 - **Claro** (`type: claro`, cidade 190 = Canoas-RS): API Solr pública do site da Claro (`programacao.claro.com.br/gatekeeper`), 269 canais, só título+gênero, ~11 s e ~40k programas por execução (janela de `days` dias). **O WAF exige `q=` como 1º parâmetro e `:` sem codificar.** Traz as grades locais do RS (`claro.2063` Band HD, `claro.2091` SBT HD, `claro.2140` Globo RBS) usadas em `mapping.json`. IDs de saída: `claro.<id_canal>`.
-- **m3u4u** (removido em 09/10: secret apagado; opcional, secret): XML gerado pelo site. Em 4 h ficou idêntico; ainda não se sabe se atualiza sozinho. Só entra se tiver a grade mais longa, então não atrapalha. Cobre canais que só ele tem (Sportynet, Premiere 1, Sony, USA Network...). A página m3u4u.com/epg é só catálogo (1.824 canais; `(m3u4u)` = base própria, `(src##)` = terceiros), sem URLs de fonte.
+- **m3u4u** (REMOVIDO em 09/10, secret apagado; `scripts/check_m3u4u.py` e `monitoring/` ficaram obsoletos): XML gerado pelo site. Em 4 h ficou idêntico; ainda não se sabe se atualiza sozinho. Só entra se tiver a grade mais longa, então não atrapalha. Cobre canais que só ele tem (Sportynet, Premiere 1, Sony, USA Network...). A página m3u4u.com/epg é só catálogo (1.824 canais; `(m3u4u)` = base própria, `(src##)` = terceiros), sem URLs de fonte.
 - Descartadas: EPG_Share ALL_SOURCES (enorme), m3u4me (precisa de servidor 24 h; o dono não tem).
 
 ## Limites conhecidos (não é bug do script)
@@ -49,14 +49,6 @@ Actions (cron 0 */6 * * *, ou "Run workflow")
 - SBT RS e Band RS só têm grade curta (Open-EPG).
 - Premiere 1: nenhuma fonte pública.
 - O deploy do Pages às vezes demora alguns minutos; não é erro.
-
-## Tarefa pendente (OBSOLETA em 2026-10-09: dono removeu o secret `M3U4U_EPG_URL`; Sony/USA/Premiere 1/Sportynet 01 e 04 passaram a vir de fontes públicas via `aliases`): validar se o link do m3u4u se atualiza sozinho (verificar ~10h de Brasília de 2026-10-09)
-Contexto: o secret `M3U4U_EPG_URL` é um XML gerado no site do m3u4u. Em 2026-10-09 ele ficou **byte a byte idêntico** por ~4 h (7.356.083 bytes, 246 canais, grade de 07/10 01:00 a 11/10 07:13 UTC). Baseline em `monitoring/m3u4u_baseline.json`.
-Como validar (não precisa do link):
-1. `python3 scripts/epgctl.py summary` — a linha `m3u4u` mostra "grade da fonte até DD/MM HH:MM UTC" da última execução do Actions. Se for **depois de 11/10 07:13** → o link é **vivo** (manter). Se continuar em **11/10 07:13** (e já passou de 10 h do dia 09) → **congelado**.
-2. Rode o workflow (ou espere o agendado) antes, para o report refletir o momento: `python3 scripts/epgctl.py status`.
-3. Com o link (o dono informa na sessão, nunca gravar): `M3U4U_EPG_URL='<link>' python3 scripts/check_m3u4u.py` compara com o baseline e dá o veredito.
-Decisão: vivo → manter o secret; congelado → o dono pode apagar o secret `M3U4U_EPG_URL` (o resto do projeto não depende dele). Registrar o resultado aqui.
 
 ## Avisos automáticos (issues)
 `build_epg.py` gera `alerts/alerts.json` (`{"completo": bool, "alertas":[{key,title,body,repeat}]}`); o passo "Avisos por issue" do workflow abre/atualiza/fecha **issues com a label `epg-alerta`** (uma por `key`; o GitHub envia e-mail ao abrir). Se o aviso some numa execução completa, a issue é fechada sozinha.
@@ -82,6 +74,8 @@ XTREAM_URL=... XTREAM_USER=... XTREAM_PASS=... [M3U4U_EPG_URL=...] python3 scrip
 - Erro no passo "Gerar EPG": o log completo exige login; reproduza localmente apagando `docs/` e rodando o script (já houve falha por pasta inexistente).
 
 ## Receitas
+- **Dois canais com a mesma grade:** comparar as fontes (`channel_check.csv` mostra a fonte usada). Se a fonte é genérica ("No Data", título único) já é tratada por `is_filler`; se for rede com afiliadas, é esperado. Se uma fonte divergir das outras, fixe a boa em `mapping.json`.
+- **Canal sem casamento por nome** (ex.: "RECORD SP" × "RecordTV SP"): adicionar em `aliases` (config.json) depois de conferir o alvo e a data final nas fontes.
 - **Canal com grade errada/ausente:** `epgctl.py channel <nome>` → ver `fonte`/`id_na_fonte`. Se o canal certo existe em alguma fonte com outro nome, adicione em `mapping.json` e rode o gerador. Se o ID é compartilhado, ajuste `region_prefer`/`mapping.json`.
 - **Nova fonte de EPG:** teste antes (baixa? quantos canais? até que data? quantos casam com `channel_map.csv`), depois uma linha em `config.json`. Fonte com URL secreta usa `url_env` + secret + linha em `.github/workflows/epg.yml`.
 - **Arquivo pesado/lento no app:** reduzir `days_ahead`/`desc_max` em `config.json` (hoje ~6,6 MB, ~0,9 MB comprimido).
@@ -90,13 +84,15 @@ XTREAM_URL=... XTREAM_USER=... XTREAM_PASS=... [M3U4U_EPG_URL=...] python3 scrip
 ## Histórico de decisões (resumo)
 Fonte única do provedor estava velha → múltiplas fontes, vence a grade mais longa → bug de elementos XML compartilhados (HBO sem grade) corrigido com cópia por canal → app TVLOK ignorava a fonte adicional (usar override) → arquivo de 16 MB/gz lento → XML enxuto sem gz → histórico git crescia → Pages via Actions → IDs errados/repetidos do provedor → casamento por nome primeiro + região RS → variantes 4K irmãs.
 
-## Estado atual (2026-10-09) e como continuar
-- Último resultado conhecido: **1.140 de 2.034 canais com EPG** (1.000 por ID do provedor, 129 por nome, 11 por variante irmã); 894 sem EPG em nenhuma fonte. 12 fontes ativas (11 públicas + provedor; m3u4u opcional entrega ~30 canais).
-- Avisos por issue implementados (seção acima); o passo JavaScript do workflow ainda **não foi visto rodando** no Actions: na primeira execução depois do push, conferir se o passo "Avisos por issue" ficou verde e se as issues (label `epg-alerta`) fazem sentido. Esperado: aviso de `fonte-parada-pluto-br` (grade termina em 09/10); a conta vence em 28/10/2026 (aviso a partir de 13/10).
-- Pendência: validar se o link do m3u4u se atualiza (seção "Tarefa pendente", ~10 h de 09/10).
-- Pendência do dono: mandar exemplos concretos de variantes (ex.: "ESPN 2") que ainda aparecem erradas no TVLOK; os dados do XML mostram todas as variantes com a mesma grade, então pode ser comportamento do app.
-
-- **Aberto (09/10):** ESPN 2 = ESPN deslocada 3 h em iptv-epg-br/epgshare-br/open-epg-3; epgshare-br2 e a Claro ("ESPN 2 HD" = conteúdo que 4 fontes chamam de ESPN 3) divergem. Falta o dono confirmar na TV o que a ESPN 2 exibe para escolher a fonte (`mapping.json`: `espn.2.br`).
+## Estado atual (2026-10-09, fim do dia) e como continuar
+- Antes das mudanças do dia: 1.140 de 2.034 canais com EPG. Depois do commit dos apelidos: 1.163 (871 sem EPG). As mudanças seguintes (Claro, filler) ainda **não foram medidas no Actions**: rodar o workflow e conferir `python3 scripts/epgctl.py summary` (linha `claro` e total "Sem EPG").
+- Feito em 09/10: avisos por issue funcionando (passo JS verde); m3u4u removido (secret apagado pelo dono); **`aliases`** em `config.json` (19 apelidos validados); **fonte Claro** (`type: claro`, cidade 190) com grade local do RS (Band/SBT RS via `mapping.json`); regra **grade genérica perde para grade real** + descarte de "No Data".
+- Diagnóstico de duplicatas (09/10): grades idênticas entre canais da mesma rede (afiliadas Globo/RPC/Anhanguera/NSC, Record/Atalaia, SBT/SBT Cuiabá) são esperadas; os demais casos eram placeholders (corrigidos).
+- Fontes avaliadas e **descartadas**: `epg.lat/files/br.xml.gz` (arquivo de 20/09, espelho do EPG_Share; o diretório ge.m3uiptv.com só lista links), `globetvapp/epg` (parado desde dez/2025), open-epg `brazil2/5` (0 canais novos), Plex/Samsung i.mjh.nz (404), Roku (só 24h).
+- Sem solução em fonte pública: afiliadas regionais pequenas (Globo Rede Amazônica, EPTV Araraquara, Band RN, SBT regionais), Fórmula 1, Agro Canal, Sportynet 02/03 (só o m3u4u tinha), Gazeta Alagoas/Norte ES.
+- **Pendência do dono 1:** ver na TV o que a **ESPN 2** exibe agora. Hoje ESPN 2 = ESPN deslocada 3 h em iptv-epg-br/epgshare-br/open-epg-3; epgshare-br2 e a Claro ("ESPN 2 HD" = conteúdo que 4 fontes chamam de ESPN 3) divergem. Com a resposta, fixar a fonte em `mapping.json` (`espn.2.br`, `espn.3.br`).
+- **Pendência do dono 2:** exemplos de variantes que ainda aparecem erradas no TVLOK.
+- Conferir após o próximo run: issue `fonte-parada-pluto-br` (esperada, grade termina em 10/10), conta do provedor vence em 28/10/2026 (aviso desde 13/10), e se a linha `claro` aparece com grade até ~15/10.
 
 ### Backlog de melhorias (ideias, nada disso está feito)
 1. **Painel** `index.html` no Pages com resumo, status das fontes, favoritos e problemas.
@@ -106,6 +102,9 @@ Fonte única do provedor estava velha → múltiplas fontes, vence a grade mais 
 5. **Lista de favoritos** mais refinada (por ID e por nome exato) e limiares de aviso configuráveis em `config.json`.
 6. Fixar `ubuntu-24.04` no workflow (o `ubuntu-latest` migra para o Ubuntu 26 em 19/10/2026) e atualizar as actions para versões Node 24 quando houver.
 7. Reduzir o histórico de aviso de "fonte parada" para fontes que o dono considera descartáveis (ex.: remover Pluto do `config.json`).
+
+8. **Cache das fontes** também vale para a Claro (21 MB só com janela longa; hoje busca janela curta, ~11 s).
+9. Verificar periodicamente se a API da Claro mudou (WAF exige `q=` como 1º parâmetro; sem termo de uso público).
 
 ### Como registrar o trabalho
 Ao terminar uma melhoria: atualizar este arquivo (arquitetura, limites, backlog e "Estado atual"), rodar o gerador localmente, pedir confirmação ao dono, commitar e rodar o workflow; conferir com `python3 scripts/epgctl.py status|summary`.
