@@ -7,17 +7,21 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  issues: write
 concurrency:
   group: pages
   cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      publish: ${{ steps.build.outputs.publish }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - name: Gerar EPG
+        id: build
         env:
           XTREAM_URL: ${{ secrets.XTREAM_URL }}
           XTREAM_USER: ${{ secrets.XTREAM_USER }}
@@ -25,10 +29,69 @@ jobs:
           M3U4U_EPG_URL: ${{ secrets.M3U4U_EPG_URL }}
         run: python scripts/build_epg.py
       - uses: actions/upload-pages-artifact@v3
+        if: steps.build.outputs.publish == 'true'
         with:
           path: docs
+      # Avisos: abre/atualiza/fecha issues (label epg-alerta). O GitHub envia e-mail ao abrir.
+      - name: Avisos por issue
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+        with:
+          script: |
+            const fs = require('fs');
+            const { owner, repo } = context.repo;
+            const LABEL = 'epg-alerta';
+            const run = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+            let alerts = [], completo = false;
+            try {
+              const j = JSON.parse(fs.readFileSync('alerts/alerts.json', 'utf8'));
+              alerts = j.alertas || []; completo = !!j.completo;
+            } catch (e) {
+              if (process.env.BUILD_OUTCOME === 'failure') {
+                alerts = [{ key: 'script-falhou', title: 'Falha ao gerar o EPG',
+                  body: 'O passo "Gerar EPG" terminou com erro inesperado. O EPG anterior continua publicado.', repeat: true }];
+              }
+            }
+            await github.rest.issues.createLabel({ owner, repo, name: LABEL, color: 'd93f0b',
+              description: 'Avisos automáticos do EPG' }).catch(() => {});
+            const open = await github.paginate(github.rest.issues.listForRepo,
+              { owner, repo, state: 'open', labels: LABEL, per_page: 100 });
+            const byKey = new Map();
+            for (const i of open) {
+              const m = (i.body || '').match(/<!-- key:(.+?) -->/);
+              if (m) byKey.set(m[1], i);
+            }
+            for (const a of alerts) {
+              const title = `[EPG] ${a.title}`;
+              const head = `<!-- key:${a.key} -->\n${a.body}`;
+              const body = `${head}\n\n_Aviso automático · [execução](${run})_`;
+              const ex = byKey.get(a.key);
+              if (!ex) {
+                await github.rest.issues.create({ owner, repo, title, body, labels: [LABEL] });
+              } else {
+                if (ex.title !== title || !(ex.body || '').startsWith(head)) {
+                  await github.rest.issues.update({ owner, repo, issue_number: ex.number, title, body });
+                }
+                if (a.repeat) {
+                  await github.rest.issues.createComment({ owner, repo, issue_number: ex.number,
+                    body: `Ainda ocorrendo na execução ${run}` });
+                }
+              }
+            }
+            if (completo) {
+              for (const [key, i] of byKey) {
+                if (!alerts.some(a => a.key === key)) {
+                  await github.rest.issues.createComment({ owner, repo, issue_number: i.number,
+                    body: `Resolvido automaticamente na execução ${run}.` });
+                  await github.rest.issues.update({ owner, repo, issue_number: i.number, state: 'closed' });
+                }
+              }
+            }
   deploy:
     needs: build
+    if: needs.build.outputs.publish == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

@@ -55,6 +55,17 @@ Como validar (não precisa do link):
 3. Com o link (o dono informa na sessão, nunca gravar): `M3U4U_EPG_URL='<link>' python3 scripts/check_m3u4u.py` compara com o baseline e dá o veredito.
 Decisão: vivo → manter o secret; congelado → o dono pode apagar o secret `M3U4U_EPG_URL` (o resto do projeto não depende dele). Registrar o resultado aqui.
 
+## Avisos automáticos (issues)
+`build_epg.py` gera `alerts/alerts.json` (`{"completo": bool, "alertas":[{key,title,body,repeat}]}`); o passo "Avisos por issue" do workflow abre/atualiza/fecha **issues com a label `epg-alerta`** (uma por `key`; o GitHub envia e-mail ao abrir). Se o aviso some numa execução completa, a issue é fechada sozinha.
+- `provedor-fora`: Xtream não responde (3 tentativas, `EPG_RETRY_WAIT` em segundos, padrão 30). **Não publica**: o EPG anterior continua no ar. Comenta a cada execução.
+- `credenciais`: `auth` != 1 ou lista vazia (senha/usuário trocados). Também não publica.
+- `conta-expira`: `exp_date` do provedor em ≤ 15 dias (ou vencida); `conta-status`: status != Active.
+- `lista-mudou`: canais caíram abaixo de 70% da execução anterior.
+- `fonte-fora-<nome>` (falhou em 2 execuções seguidas) e `fonte-parada-<nome>` (grade < 24 h à frente em 2 execuções seguidas). O estado entre execuções vai em `docs/state.json` (publicado no Pages e lido na próxima execução).
+- `favoritos`: canais de `config.json → favoritos` (substring do nome) sem EPG em ≥ 50% dos streams ou com grade acabando em < 12 h.
+- `sem-fontes`, `script-falhou`.
+Testado localmente com servidor Xtream falso (conta vencendo, favoritos, provedor fora). A parte JavaScript do workflow só roda no GitHub.
+
 ## Operação
 ```bash
 python3 scripts/epgctl.py status            # Actions + arquivo publicado
@@ -75,3 +86,21 @@ XTREAM_URL=... XTREAM_USER=... XTREAM_PASS=... [M3U4U_EPG_URL=...] python3 scrip
 
 ## Histórico de decisões (resumo)
 Fonte única do provedor estava velha → múltiplas fontes, vence a grade mais longa → bug de elementos XML compartilhados (HBO sem grade) corrigido com cópia por canal → app TVLOK ignorava a fonte adicional (usar override) → arquivo de 16 MB/gz lento → XML enxuto sem gz → histórico git crescia → Pages via Actions → IDs errados/repetidos do provedor → casamento por nome primeiro + região RS → variantes 4K irmãs.
+
+## Estado atual (2026-10-09) e como continuar
+- Último resultado conhecido: **1.140 de 2.034 canais com EPG** (1.000 por ID do provedor, 129 por nome, 11 por variante irmã); 894 sem EPG em nenhuma fonte. 12 fontes ativas (11 públicas + provedor; m3u4u opcional entrega ~30 canais).
+- Avisos por issue implementados (seção acima); o passo JavaScript do workflow ainda **não foi visto rodando** no Actions: na primeira execução depois do push, conferir se o passo "Avisos por issue" ficou verde e se as issues (label `epg-alerta`) fazem sentido. Esperado: aviso de `fonte-parada-pluto-br` (grade termina em 09/10); a conta vence em 28/10/2026 (aviso a partir de 13/10).
+- Pendência: validar se o link do m3u4u se atualiza (seção "Tarefa pendente", ~10 h de 09/10).
+- Pendência do dono: mandar exemplos concretos de variantes (ex.: "ESPN 2") que ainda aparecem erradas no TVLOK; os dados do XML mostram todas as variantes com a mesma grade, então pode ser comportamento do app.
+
+### Backlog de melhorias (ideias, nada disso está feito)
+1. **Painel** `index.html` no Pages com resumo, status das fontes, favoritos e problemas.
+2. **Diff entre execuções**: avisar quando um canal favorito muda de fonte ou perde programas (mudança de ID no provedor); listar "canais novos sem EPG".
+3. **Cache das fontes**: se uma fonte pública cai, reaproveitar a última cópia (hoje só se perde o canal naquela execução).
+4. **Mais fontes** para canais sem grade (afiliadas regionais, Cine Sky, Sportynet, Premiere 1); testar cobertura antes de incluir.
+5. **Lista de favoritos** mais refinada (por ID e por nome exato) e limiares de aviso configuráveis em `config.json`.
+6. Fixar `ubuntu-24.04` no workflow (o `ubuntu-latest` migra para o Ubuntu 26 em 19/10/2026) e atualizar as actions para versões Node 24 quando houver.
+7. Reduzir o histórico de aviso de "fonte parada" para fontes que o dono considera descartáveis (ex.: remover Pluto do `config.json`).
+
+### Como registrar o trabalho
+Ao terminar uma melhoria: atualizar este arquivo (arquitetura, limites, backlog e "Estado atual"), rodar o gerador localmente, pedir confirmação ao dono, commitar e rodar o workflow; conferir com `python3 scripts/epgctl.py status|summary`.
