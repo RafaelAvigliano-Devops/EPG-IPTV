@@ -4,7 +4,7 @@
 Env: XTREAM_URL (ex: http://host), XTREAM_USER, XTREAM_PASS
 mapping.json: {"epg_channel_id_do_provedor": "id_na_fonte_externa"}
 """
-import gzip, io, json, os, re, sys, unicodedata, urllib.request, urllib.parse
+import copy, gzip, io, json, os, re, sys, unicodedata, urllib.request, urllib.parse
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 
@@ -24,7 +24,7 @@ def get(url, timeout=180):
 
 
 def norm(s):
-    s = unicodedata.normalize("NFKD", s or "").encode("ascii", "ignore").decode().lower()
+    s = unicodedata.normalize("NFKD", s or "").encode("ascii", "ignore").decode().lower().replace("+", " plus ")
     s = re.sub(r"\b(fhd|hd|sd|uhd|4k|h265|h264|hevc|br|tv)\b|\[.*?\]|\(.*?\)", " ", s)
     return re.sub(r"[^a-z0-9]", "", s)
 
@@ -136,6 +136,7 @@ def main():
             st = ts(p.get("stop", ""))
             if st and st < cutoff:
                 continue
+            p = copy.deepcopy(p)
             p.set("channel", eid)
             out_progs.append(p)
         if best[0] >= horizon:
@@ -181,6 +182,7 @@ def main():
                 st = ts(p.get("stop", ""))
                 if st and st < cutoff:
                     continue
+                p = copy.deepcopy(p)
                 p.set("channel", out_id)
                 out_progs.append(p)
         rows.append((s["stream_id"], s["name"], out_id, f"{stop:%d/%m %H:%M}"))
