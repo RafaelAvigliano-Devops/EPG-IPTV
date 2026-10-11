@@ -78,7 +78,7 @@
     "BBC": "BBC World News",
     "NSPORTS 1": "NSports",
     "USA NETWORK": "USA",
-    "CANAL SONY": "Sony",
+    "CANAL SONY": "Sony Channel",
     "PREMIERE 1": "Premiere Clubes",
     "PREMIERE 1 -": "Premiere Clubes",
     "Sportynet 01": "SportyNet",
@@ -119,5 +119,23 @@
       "discovery.br",
       "tlc.br"
     ]
-  ]
+  ],
+  "fuso_conhecido": {
+    "epgpw-br": -8
+  },
+  "fontes_curtas_ok": [
+    "pluto-br",
+    "open-epg-3",
+    "open-epg-4"
+  ],
+  "id_preferido": {
+    "history.channel.br": "HISTORY CHANNEL"
+  },
+  "lite": {
+    "days_ahead": 2,
+    "keep": [
+      "title"
+    ],
+    "max_names": 6
+  }
 }

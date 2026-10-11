@@ -258,6 +258,49 @@ def nome_confere(stream_names_, src_name):
     return False
 
 
+def fix_channel_shifts(sources, src_names, by_name, now):
+    """Fuso errado só em alguns canais de uma fonte (ex.: parte do EPG_Share vem do epg.pw com -8 h): compara cada canal com o mesmo
+    canal (por nome) das outras fontes e soma o deslocamento que fizer a concordância saltar (>= 60% e >= 2x a de 0 h)."""
+    tls = [_timeline(x[1]) for x in sources]
+    inst = [now.timestamp() + h * 3600 for h in (1, 2, 4, 6, 8, 10, 12, 15, 18, 21, 24, 30)]
+    done, fixed = set(), []
+    for i in range(len(sources)):
+        for key, cid in list(by_name[i].items()):
+            a = tls[i].get(cid)
+            if not a or (i, cid) in done:
+                continue
+            refs = [tls[j].get(by_name[j].get(key)) for j in range(len(sources)) if j != i and by_name[j].get(key)]
+            refs = [r for r in refs if r]
+            if len(refs) < 2:
+                continue
+            def score(sh):
+                ok = n = 0
+                for b in refs:
+                    for t in inst:
+                        tb = _title_at(b, t)
+                        ta = _title_at(a, t - sh * 3600) if tb and tb not in GENERIC else None
+                        if ta and ta not in GENERIC:
+                            n += 1
+                            ok += ta == tb
+                return ok, n
+            ok0, n0 = score(0)
+            if n0 < 8 or ok0 / n0 >= 0.5:
+                continue
+            sc = {sh: score(sh) for sh in range(-12, 13) if sh}
+            best = max(sc, key=lambda sh: sc[sh][0] / max(sc[sh][1], 1))
+            ob, nb = sc[best]
+            if nb >= 8 and ob / nb >= 0.6 and ob / nb >= 2 * ok0 / n0:
+                d = timedelta(hours=best)
+                for p in sources[i][1][cid]:
+                    for at in ("start", "stop"):
+                        p.set(at, f"{ts(p.get(at)) + d:%Y%m%d%H%M%S} +0000")
+                if cid in sources[i][2]:
+                    sources[i][2][cid] += d
+                done.add((i, cid))
+                fixed.append(f"{src_names[i]}: {cid} {best:+d} h ({ok0 / n0:.0%} -> {ob / nb:.0%})")
+    return fixed
+
+
 def shift_source(source, hours):
     ch, progs, last = source
     d = timedelta(hours=hours)
@@ -408,7 +451,7 @@ def main():
             alert(f"fonte-fora-{nome}", f"Fonte de EPG '{nome}' fora do ar",
                   f"Falhou em {falhas} execuções seguidas. O script continua com as outras fontes. "
                   "Verifique se o endereço mudou (config.json).")
-        if curta >= 2:
+        if curta >= 2 and nome not in cfg.get("fontes_curtas_ok", []):
             alert(f"fonte-parada-{nome}", f"Fonte de EPG '{nome}' parada",
                   f"A grade dessa fonte termina em {fim:%d/%m %H:%M} UTC" if fim else "Fonte sem programação.")
 
@@ -431,6 +474,9 @@ def main():
 
     now = datetime.now(timezone.utc)
     # --- saúde das fontes: corrige fuso errado e isola fonte que diverge das demais ---
+    for n_, h_ in cfg.get("fuso_conhecido", {}).items():  # fuso já diagnosticado: corrige sem alarde
+        if n_ in src_names:
+            shift_source(sources[src_names.index(n_)], h_)
     health = source_health(sources, by_name, now)
     for h in health:
         i, nome = h["i"], src_names[h["i"]]
@@ -453,7 +499,8 @@ def main():
             h["acao"] = "baixa concordância (só aviso)"
             alert(f"fonte-divergente-{nome}", f"Fonte '{nome}' com baixa concordância ({h['r0']:.0%})",
                   f"{h['n']} comparações com as outras fontes. Verifique fuso e casamento de canais.")
-    tls = [_timeline(x[1]) for x in sources]  # depois do ajuste de fuso
+    canais_fuso = fix_channel_shifts(sources, src_names, by_name, now)  # fuso errado só em alguns canais
+    tls = [_timeline(x[1]) for x in sources]  # depois dos ajustes de fuso
     instants = [now.timestamp() + h * 1800 for h in range(48)]  # próximas 24 h, de 30 em 30 min
     swaps = []  # canais em que o consenso das fontes trocou a escolha
     horizon = now + timedelta(hours=cfg["min_hours_ahead"])
@@ -472,6 +519,8 @@ def main():
                 if prefer.intersection(re.findall(r"[a-z0-9]+", nm.lower())):
                     major = norm(nm)
                     break
+        if eid in cfg.get("id_preferido", {}) and norm(cfg["id_preferido"][eid]) in group[eid]:
+            major = norm(cfg["id_preferido"][eid])  # ID repetido pelo provedor: o dono escolheu quem fica com a grade
         major = alias.get(major, major)
         keys = name_keys(major)
         for stage in ("map", "name", "id"):
@@ -643,6 +692,25 @@ def main():
     os.makedirs(os.path.dirname(path), exist_ok=True)
     ET.ElementTree(out).write(path, encoding="utf-8", xml_declaration=True)
     print(f"escrito {path}: {os.path.getsize(path)//1024} KB")
+    lite = cfg.get("lite")
+    if lite:
+        fim_ = now + timedelta(days=lite["days_ahead"])
+        root_ = ET.Element("tv", {"generator-info-name": "EPG-IPTV lite"})
+        for c_ in out.findall("channel"):
+            e_ = ET.SubElement(root_, "channel", {"id": c_.get("id")})
+            for d_ in c_.findall("display-name")[: lite["max_names"]]:
+                ET.SubElement(e_, "display-name").text = d_.text
+        for q_ in out_progs:
+            st_ = ts(q_.get("start"))
+            if st_ and st_ <= fim_:
+                e_ = ET.SubElement(root_, "programme", {k: q_.get(k) for k in ("start", "stop", "channel")})
+                for tag_ in lite["keep"]:
+                    for c_ in q_.findall(tag_)[:1]:
+                        ET.SubElement(e_, tag_, c_.attrib).text = c_.text
+        lp = os.path.join(ROOT, "docs", "epg-lite.xml")
+        ET.ElementTree(root_).write(lp, encoding="utf-8", xml_declaration=True)
+        print(f"escrito {lp}: {os.path.getsize(lp)//1024} KB")
+
 
     import csv as _csv
     with open(os.path.join(ROOT, "docs", "channel_check.csv"), "w", newline="") as f:
@@ -673,6 +741,8 @@ def main():
         for n, (_, _, lst) in zip(src_names, sources):
             fim = f"{max(lst.values()):%d/%m %H:%M}" if lst else "-"
             f.write(f"  {n:<16} {used.get(n, 0):>5} usados   grade da fonte ate {fim} UTC\n")
+        f.write(f"\nFUSO CORRIGIDO POR CANAL: {len(canais_fuso)}\n")
+        f.write("".join(f"  {x}\n" for x in canais_fuso[:40]))
         f.write(f"\nCONSENSO: {len(swaps)} canal(is) trocado(s) porque a fonte escolhida divergia das demais\n")
         f.write("".join(f"  {x}\n" for x in swaps))
         nomes_ruins = [f"{e} ({stream_names[e][0]}) -> {c[0]}: {c[2]} [{c[3]}]" for e, c in sorted(choice.items())

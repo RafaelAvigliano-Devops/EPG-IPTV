@@ -57,6 +57,10 @@ Actions (cron 0 */6 * * *, ou "Run workflow")
 ## Saúde das fontes (anti-erro de fuso/divergência)
 `source_health()` em `build_epg.py` compara cada fonte com as demais (título igual, mesmo canal, mesmo instante; títulos genéricos ignorados) e escreve a seção **SAUDE DAS FONTES** no `report.txt` (concordância, nº de comparações, melhor ajuste de fuso). Fuso errado é **corrigido automaticamente** (issue `fonte-fuso-<nome>`); fonte com < 15% é **isolada** (`fonte-divergente-<nome>`). Valores normais hoje: 67–73% (provedor, Claro, iptv-epg-br, open-epg, epgshare-br2). **Claro precisa de `-0300`** (horário local com sufixo Z). Ao incluir uma fonte nova, olhe essa seção antes de confiar nela.
 
+## Arquivos publicados e config de ajuste
+- `epg.xml` (completo, ~5,5 MB) e **`epg-lite.xml`** (2 dias, só título, ~2,4 MB; recomendado para TV lenta): `https://rafaelavigliano-devops.github.io/EPG-IPTV/epg-lite.xml`.
+- `config.json`: `fuso_conhecido` (fonte → horas), `fontes_curtas_ok` (sem aviso de fonte parada), `id_preferido` (ID repetido → nome que fica com a grade), `aliases`, `lite`, `identicas_ok`, `categorias_rede_ok`, `region_prefer`.
+
 ## Proteções contra ligação errada (build_epg.py)
 - `source_health`: fuso e divergência por fonte (acima).
 - `consensus_pick`: troca a fonte escolhida de um canal quando ela diverge das demais (mapping manual nunca é trocado).
