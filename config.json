@@ -48,6 +48,18 @@
       "type": "file",
       "path": "mitv/guide.xml",
       "names_only": true
+    },
+    {
+      "name": "open-epg-2",
+      "url": "https://www.open-epg.com/files/brazil2.xml.gz"
+    },
+    {
+      "name": "open-epg-6",
+      "url": "https://www.open-epg.com/files/brazil6.xml.gz"
+    },
+    {
+      "name": "open-epg-7",
+      "url": "https://www.open-epg.com/files/brazil7.xml.gz"
     }
   ],
   "min_hours_ahead": 24,
