@@ -91,6 +91,33 @@
     "GLOBO TV LIBERAL BELEM": "TV Liberal",
     "GLOBO TV GAZETA ES VITORIA": "Rede Gazeta",
     "GAZETA SUL ESPIRITO SANTO": "TV Gazeta Sul",
-    "GLOBO RBS TV PASSO FUNDO": "Globo (RBS)"
-  }
+    "GLOBO RBS TV PASSO FUNDO": "Globo (RBS)",
+    "DISCOVERY TLC": "TLC"
+  },
+  "categorias_rede_ok": [
+    "GLOBO",
+    "RECORD",
+    "SBT",
+    "BANDEIRANTES",
+    "ABERTOS",
+    "VARIEDADES",
+    "RELIGIOSOS",
+    "NOTICIAS"
+  ],
+  "identicas_ok": [
+    [
+      "paramount.plus.1.br",
+      "paramount.plus.2.br",
+      "paramount.plus.3.br",
+      "paramount.plus.4.br"
+    ],
+    [
+      "USA.br",
+      "syfy.br"
+    ],
+    [
+      "discovery.br",
+      "tlc.br"
+    ]
+  ]
 }

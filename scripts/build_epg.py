@@ -4,7 +4,7 @@
 Env: XTREAM_URL (ex: http://host), XTREAM_USER, XTREAM_PASS
 mapping.json: {"epg_channel_id_do_provedor": "id_na_fonte_externa"}
 """
-import gzip, io, json, os, re, sys, time, unicodedata, urllib.request, urllib.parse
+import bisect, gzip, io, json, os, re, sys, time, unicodedata, urllib.request, urllib.parse
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 
@@ -144,19 +144,147 @@ def is_filler(progs):
     return len({(p.findtext("title") or "").strip().lower() for p in progs}) <= 2
 
 
+GENERIC = {"nodata", "filme", "progra", "sempro", "serie", "special", ""}  # títulos genéricos não provam nada
+
+
+def tkey(t):
+    t = unicodedata.normalize("NFKD", t or "").encode("ascii", "ignore").decode().lower()
+    return re.sub(r"[^a-z0-9]", "", re.split(r"[║|:\-–]", t)[0])[:6]
+
+
+def _timeline(progs):
+    d = {}
+    for cid, lst in progs.items():
+        if is_filler(lst):
+            continue
+        rows = sorted((ts(p.get("start")).timestamp(), ts(p.get("stop")).timestamp(), tkey(p.findtext("title"))) for p in lst)
+        d[cid] = ([r[0] for r in rows], [r[1] for r in rows], [r[2] for r in rows])
+    return d
+
+
+def _title_at(tl, t):
+    i = bisect.bisect_right(tl[0], t) - 1
+    return tl[2][i] if i >= 0 and t < tl[1][i] else None
+
+
+def source_health(sources, by_name, now):
+    """Compara cada fonte com as outras (mesmo canal por nome, mesmo instante): detecta fuso errado e fonte divergente.
+    -> lista de dicts {i, n, r0, shift, rbest}; shift = horas a SOMAR aos horários da fonte para concordar com as demais."""
+    tls = [_timeline(s[1]) for s in sources]
+    instants = [now.timestamp() + h * 3600 for h in (1, 3, 5, 7, 11, 17)]
+    shifts = range(-14, 15)
+    out = []
+    for i in range(len(sources)):
+        sc = {sh: [0, 0] for sh in shifts}
+        for key, cid in list(by_name[i].items())[:500]:
+            a = tls[i].get(cid)
+            if not a:
+                continue
+            for j in range(len(sources)):
+                b = tls[j].get(by_name[j].get(key)) if j != i else None
+                if not b:
+                    continue
+                for t in instants:
+                    tb = _title_at(b, t)
+                    if not tb or tb in GENERIC:
+                        continue
+                    for sh in shifts:
+                        ta = _title_at(a, t - sh * 3600)
+                        if ta and ta not in GENERIC:
+                            sc[sh][1] += 1
+                            sc[sh][0] += ta == tb
+        ratio = {sh: (v[0] / v[1] if v[1] else 0) for sh, v in sc.items()}
+        best = max(shifts, key=lambda sh: (ratio[sh], -abs(sh)))
+        out.append({"i": i, "n": sc[0][1], "r0": ratio[0], "shift": best, "rbest": ratio[best]})
+    return out
+
+
+def name_keys(k):
+    """'espn1' também procura 'espn' (o canal principal costuma ser publicado sem o número 1)."""
+    return [k] + ([k[:-1]] if len(k) > 3 and k.endswith("1") and not k[-2].isdigit() else [])
+
+
+def find_by_name(idx, key):
+    return next((idx[k] for k in name_keys(key) if k in idx), None)
+
+
+def _agree(a, b, instants):
+    ok = n = 0
+    for x in instants:
+        ta, tb = _title_at(a, x), _title_at(b, x)
+        if ta and tb and ta not in GENERIC and tb not in GENERIC:
+            n += 1
+            ok += ta == tb
+    return ok, n
+
+
+def consensus_pick(cands, cur, tls, instants, lasts=None):
+    """cands {fonte_i: id_do_canal}. Se a escolhida diverge das demais (< 40%) e outra concorda com a maioria (>= 60%, apoiada
+    por >= 2 fontes), devolve a fonte melhor. -> (fonte_i ou None, scores)"""
+    scores = {}
+    for i, cid in cands.items():
+        a = tls[i].get(cid)
+        if not a:
+            continue
+        vals = []
+        for j, cj in cands.items():
+            b = tls[j].get(cj) if j != i else None
+            if b:
+                ok, n = _agree(a, b, instants)
+                if n >= 6:
+                    vals.append(ok / n)
+        if vals:
+            scores[i] = (sum(vals) / len(vals), sum(v >= 0.5 for v in vals))
+    if cur in scores and len(scores) >= 3:
+        best = max(scores, key=lambda k: scores[k])
+        if lasts:  # empate técnico (até 5 pontos) -> a fonte com a grade mais longa
+            near = [k for k in scores if scores[k][0] >= scores[best][0] - 0.05 and scores[k][1] >= 2]
+            best = max(near, key=lambda k: lasts.get(k) or 0) if near else best
+        if best != cur and scores[cur][0] < 0.40 and scores[best][0] >= 0.60 and scores[best][1] >= 2:
+            return best, scores
+    return None, scores
+
+
+
+def nome_confere(stream_names_, src_name):
+    """O nome do canal na fonte combina com o nome do stream? (letras em comum e mesmo número; '1' ≙ sem número)"""
+    b = vkey(src_name)
+    db = {t for t in b if t.isdigit()}
+    for n in stream_names_:
+        a = vkey(n)
+        da = {t for t in a if t.isdigit()}
+        if (a - da) & (b - db) and (da == db or {"1"} in (da, db) and not (da and db)):
+            return True
+    return False
+
+
+def shift_source(source, hours):
+    ch, progs, last = source
+    d = timedelta(hours=hours)
+    for lst in progs.values():
+        for p in lst:
+            for a in ("start", "stop"):
+                p.set(a, f"{ts(p.get(a)) + d:%Y%m%d%H%M%S} +0000")
+    for k in last:
+        last[k] += d
+
+
+
 def load_claro(name, city, days):
     """(o WAF da Claro exige q= como 1º parâmetro) Grade da Claro (API Solr pública do site) só para a janela necessária, convertida para o formato das outras fontes."""
     base = "https://programacao.claro.com.br/gatekeeper"
     q = lambda path, **kw: json.loads(get(f"{base}/{path}/select?" + urllib.parse.urlencode(kw, safe=":[]*-,") + "&wt=json"))["response"]["docs"]
     now = datetime.now(timezone.utc)
-    a, b = (now - timedelta(hours=cfg["hours_past"] + 6)).strftime("%Y-%m-%dT%H:%M:00Z"), (now + timedelta(days=days)).strftime("%Y-%m-%dT%H:%M:00Z")
+    # A Claro entrega horário LOCAL (Brasília, UTC-3) com sufixo "Z": tratar como -0300 (bug de 11/10: grade 3 h adiantada)
+    loc = now - timedelta(hours=3)
+    a, b = (loc - timedelta(hours=cfg["hours_past"] + 6)).strftime("%Y-%m-%dT%H:%M:00Z"), (loc + timedelta(days=days)).strftime("%Y-%m-%dT%H:%M:00Z")
     canais = q("canal", q=f"id_cidade:{city}", rows=1000, fl="id_canal nome cn_canal", fq="-cn_canal:0")
     ex = q("exibicao", q=f"id_cidade:{city}", rows=300000, fl="id_canal titulo genero dh_inicio dh_fim",
            fq=f"dh_inicio:[{a} TO {b}]")
     ch, progs, last = {}, {}, {}
     for c in canais:
         ch[f"claro.{c['id_canal']}"] = ([c["nome"].replace("³", "").strip()], None)
-    fmt = lambda v: v.replace("-", "").replace(":", "").replace("T", "").replace("Z", "") + "00 +0000"
+    fmt = lambda v: v.replace("-", "").replace(":", "").replace("T", "").replace("Z", "") + "00 -0300"
     for e in ex:
         cid = f"claro.{e['id_canal']}"
         if cid not in ch or not e.get("titulo"):
@@ -186,6 +314,10 @@ def main():
               "O EPG anterior continua publicado. Se durar, o provedor pode ter trocado de endereço: "
               "atualize o secret `XTREAM_URL`.", repeat=True)
         return finish(False)
+    try:
+        cat_name = {str(c["category_id"]): c["category_name"] for c in json.loads(get_retry(f"{BASE}/player_api.php?{q}&action=get_live_categories", tries=2))}
+    except Exception:
+        cat_name = {}
     ui = info.get("user_info") if isinstance(info, dict) else None
     if not isinstance(ui, dict) or str(ui.get("auth")) != "1" or not isinstance(streams, list) or not streams:
         alert("credenciais", "Provedor recusou a conta ou devolveu lista vazia",
@@ -298,6 +430,32 @@ def main():
         by_name.append(idx)
 
     now = datetime.now(timezone.utc)
+    # --- saúde das fontes: corrige fuso errado e isola fonte que diverge das demais ---
+    health = source_health(sources, by_name, now)
+    for h in health:
+        i, nome = h["i"], src_names[h["i"]]
+        h["acao"] = ""
+        if h["n"] < 30:
+            h["acao"] = "poucos dados para comparar"
+        elif h["shift"] != 0 and h["rbest"] >= 0.40 and h["rbest"] >= 2 * h["r0"]:
+            shift_source(sources[i], h["shift"])
+            h["acao"] = f"horário corrigido automaticamente ({h['shift']:+d} h)"
+            alert(f"fonte-fuso-{nome}", f"Fonte '{nome}' com horário deslocado ({h['shift']:+d} h), corrigida automaticamente",
+                  f"Concordância de títulos com as outras fontes: {h['r0']:.0%} sem ajuste, {h['rbest']:.0%} com {h['shift']:+d} h. "
+                  "O script somou o deslocamento aos horários desta fonte. Corrija a leitura de fuso no código da fonte.")
+        elif h["r0"] < 0.15 and h["n"] >= 100:
+            sources[i] = (sources[i][0], {}, {})
+            by_name[i] = {}
+            h["acao"] = "ISOLADA (diverge das demais)"
+            alert(f"fonte-divergente-{nome}", f"Fonte '{nome}' divergente: isolada automaticamente",
+                  f"Só {h['r0']:.0%} dos títulos coincidem com as outras fontes ({h['n']} comparações). Fonte ignorada nesta execução.")
+        elif h["r0"] < 0.30:
+            h["acao"] = "baixa concordância (só aviso)"
+            alert(f"fonte-divergente-{nome}", f"Fonte '{nome}' com baixa concordância ({h['r0']:.0%})",
+                  f"{h['n']} comparações com as outras fontes. Verifique fuso e casamento de canais.")
+    tls = [_timeline(x[1]) for x in sources]  # depois do ajuste de fuso
+    instants = [now.timestamp() + h * 1800 for h in range(48)]  # próximas 24 h, de 30 em 30 min
+    swaps = []  # canais em que o consenso das fontes trocou a escolha
     horizon = now + timedelta(hours=cfg["min_hours_ahead"])
     win_min = now - timedelta(hours=cfg["hours_past"])
     win_max = now + timedelta(days=cfg["days_ahead"])
@@ -315,15 +473,29 @@ def main():
                     major = norm(nm)
                     break
         major = alias.get(major, major)
+        keys = name_keys(major)
         for stage in ("map", "name", "id"):
             for i, (ch, progs, last) in enumerate(sources):
-                cand = {"map": mapping.get(eid), "name": by_name[i].get(major), "id": eid}[stage]
+                cand = {"map": mapping.get(eid), "name": find_by_name(by_name[i], major), "id": eid}[stage]
                 if cand and cand in progs:
                     rank = (not is_filler(progs[cand]), last.get(cand, now))
                     if best is None or rank > best[0]:
                         best = (rank, i, cand)
             if best:
                 break
+        motivo = {"map": "mapping", "name": "nome", "id": "id"}[stage] if best else ""
+        if best and stage != "map":  # revisão por consenso entre as fontes (mapping manual nunca é revisado)
+            cands = {}
+            for i, (ch, progs, last) in enumerate(sources):
+                for cand in (find_by_name(by_name[i], major), eid):
+                    if cand and cand in progs:
+                        cands[i] = cand
+                        break
+            alt, sc = consensus_pick(cands, best[1], tls, instants, {i_: sources[i_][2].get(c_) for i_, c_ in cands.items()})
+            if alt is not None:
+                swaps.append(f"{eid} ({name}): {src_names[best[1]]} {sc[best[1]][0]:.0%} -> {src_names[alt]} {sc[alt][0]:.0%}")
+                best = ((True, sources[alt][2].get(cands[alt], now)), alt, cands[alt])
+                motivo = "consenso"
         if not best:
             report["sem_epg"].append(f"{eid} ({name})")
             continue
@@ -332,7 +504,7 @@ def main():
         used[src_names[i]] = used.get(src_names[i], 0) + 1
         used_by_id += 1
         got.add(eid)
-        choice[eid] = (src_names[i], cid, (sources[i][0].get(cid, ([""],))[0] or [""])[0])
+        choice[eid] = (src_names[i], cid, (sources[i][0].get(cid, ([""],))[0] or [""])[0], motivo)
         ch, progs, _ = sources[i]
         names, icon = ch.get(cid, ([name], None))
         c = ET.SubElement(out, "channel", {"id": eid})
@@ -370,7 +542,7 @@ def main():
         if key not in name_map:
             hit = None
             for i, (ch, progs, last) in enumerate(sources):
-                cid = by_name[i].get(key)
+                cid = find_by_name(by_name[i], key)
                 if cid and cid in progs and (hit is None or (not is_filler(progs[cid]), last.get(cid, now)) > (hit[3], hit[2])):
                     hit = (i, cid, last.get(cid, now), not is_filler(progs[cid]))
             name_map[key] = hit
@@ -433,6 +605,40 @@ def main():
     if probs:
         alert("favoritos", f"Canais favoritos com problema ({len(probs)})", "\n".join(probs))
 
+
+    # --- grades idênticas entre canais diferentes (sinal de ligação errada) ---
+    seqs = {}
+    for q_ in out_progs:
+        a_, b_ = ts(q_.get("start")), ts(q_.get("stop"))
+        if a_ and b_:
+            seqs.setdefault(q_.get("channel"), []).append((a_.timestamp(), b_.timestamp(), tkey(q_.findtext("title"))))
+    dtl = {}
+    for c_, lst in seqs.items():
+        lst.sort()
+        dtl[c_] = ([x[0] for x in lst], [x[1] for x in lst], [x[2] for x in lst])
+    nome_canal = {c.get("id"): (c.findtext("display-name") or c.get("id")) for c in out.findall("channel")}
+    cat_of = {}  # id de saída -> categorias dos streams (para isentar redes de TV aberta e afiliadas)
+    for x in streams:
+        oid = x["epg_channel_id"] if x.get("epg_channel_id") else row_out.get(str(x["stream_id"]), "")
+        if oid:
+            cat_of.setdefault(oid, set()).add(cat_name.get(str(x.get("category_id")), "").upper())
+    rede_tokens = [t.upper() for t in cfg.get("categorias_rede_ok", [])]
+    is_rede = lambda oid: any(t in c for c in cat_of.get(oid, ()) for t in rede_tokens)
+    ids_ = sorted(dtl)
+    dups = []
+    for x_ in range(len(ids_)):
+        for y_ in range(x_ + 1, len(ids_)):
+            ok_, n_ = _agree(dtl[ids_[x_]], dtl[ids_[y_]], instants)
+            if n_ >= 10 and ok_ / n_ >= 0.85:
+                if any(ids_[x_] in g_ and ids_[y_] in g_ for g_ in cfg.get("identicas_ok", [])):
+                    continue  # todas as fontes concordam (placeholders/eventos); já conferido
+                if is_rede(ids_[x_]) and is_rede(ids_[y_]):
+                    continue  # TV aberta e afiliadas da mesma rede repetem a grade da cabeça de rede
+                dups.append(f"{ids_[x_]} ({nome_canal[ids_[x_]]}) = {ids_[y_]} ({nome_canal[ids_[y_]]})  {ok_}/{n_}")
+    if dups:
+        alert("grades-identicas", f"Canais diferentes com a mesma grade ({len(dups)})",
+              "Provável ligação errada (um canal recebendo a grade de outro):\n" + "\n".join(f"- {d}" for d in dups[:20]))
+
     path = os.path.join(ROOT, cfg["output"])
     os.makedirs(os.path.dirname(path), exist_ok=True)
     ET.ElementTree(out).write(path, encoding="utf-8", xml_declaration=True)
@@ -441,10 +647,10 @@ def main():
     import csv as _csv
     with open(os.path.join(ROOT, "docs", "channel_check.csv"), "w", newline="") as f:
         w = _csv.writer(f)
-        w.writerow(["epg_id_provedor", "nome_no_provedor", "fonte", "id_na_fonte", "nome_na_fonte"])
+        w.writerow(["epg_id_provedor", "nome_no_provedor", "fonte", "id_na_fonte", "nome_na_fonte", "motivo", "nome_confere"])
         for eid, nm in sorted(wanted.items()):
             if eid in choice:
-                w.writerow([eid, nm, *choice[eid]])
+                w.writerow([eid, nm, *choice[eid], "sim" if nome_confere(stream_names[eid], choice[eid][2]) else "NAO"])
     siblings_n = sum(1 for r in rows if r[3] == "irmão")
     by_name_n = matched - siblings_n
     streams_by_id = sum(1 for x in streams if x.get("epg_channel_id") in got)
@@ -460,10 +666,21 @@ def main():
         f.write(f"  Sem EPG em nenhuma fonte .......... {len(streams) - with_epg}\n")
         f.write(f"Grade com >= {cfg['min_hours_ahead']}h a frente ......... {report['ok']} (IDs do provedor)\n")
         f.write(f"Grade curta/desatualizada ........... {len(report['curto'])}\n")
+        f.write("\nSAUDE DAS FONTES (titulos iguais as outras fontes, mesmo canal e instante)\n")
+        for h in health:
+            f.write(f"  {src_names[h['i']]:<14} {h['r0']:>4.0%} de {h['n']:>5} comparacoes   {h['acao'] or 'ok'}   (melhor ajuste de fuso: {h['shift']:+d} h = {h['rbest']:.0%})\n")
         f.write("\nCANAIS ENTREGUES POR FONTE (a fonte com a grade mais longa vence)\n")
         for n, (_, _, lst) in zip(src_names, sources):
             fim = f"{max(lst.values()):%d/%m %H:%M}" if lst else "-"
             f.write(f"  {n:<16} {used.get(n, 0):>5} usados   grade da fonte ate {fim} UTC\n")
+        f.write(f"\nCONSENSO: {len(swaps)} canal(is) trocado(s) porque a fonte escolhida divergia das demais\n")
+        f.write("".join(f"  {x}\n" for x in swaps))
+        nomes_ruins = [f"{e} ({stream_names[e][0]}) -> {c[0]}: {c[2]} [{c[3]}]" for e, c in sorted(choice.items())
+                       if not nome_confere(stream_names[e], c[2])]
+        f.write(f"LIGACOES COM NOME DIFERENTE entre o canal e a grade usada ({len(nomes_ruins)}), conferir:\n")
+        f.write("".join(f"  {x}\n" for x in nomes_ruins))
+        f.write(f"GRADES IDENTICAS entre canais diferentes (fora das mesmas redes): {len(dups)}\n")
+        f.write("".join(f"  {x}\n" for x in dups))
         f.write("\n" + "=" * 50 + "\nDETALHES\n" + "=" * 50 + "\n")
         f.write(f"\nEPG curto/desatualizado ({len(report['curto'])}):\n" + "\n".join(report["curto"]))
         f.write(f"\n\nIDs do provedor sem EPG em nenhuma fonte ({len(report['sem_epg'])}):\n" + "\n".join(report["sem_epg"]))

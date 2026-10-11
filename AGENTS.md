@@ -54,6 +54,15 @@ Actions (cron 0 */6 * * *, ou "Run workflow")
 - Premiere 1: vem de Premiere Clubes via `aliases`. Premiere 2–9 só têm programa real em dia de jogo (nas outras horas todas as fontes dão título genérico).
 - O deploy do Pages às vezes demora alguns minutos; não é erro.
 
+## Saúde das fontes (anti-erro de fuso/divergência)
+`source_health()` em `build_epg.py` compara cada fonte com as demais (título igual, mesmo canal, mesmo instante; títulos genéricos ignorados) e escreve a seção **SAUDE DAS FONTES** no `report.txt` (concordância, nº de comparações, melhor ajuste de fuso). Fuso errado é **corrigido automaticamente** (issue `fonte-fuso-<nome>`); fonte com < 15% é **isolada** (`fonte-divergente-<nome>`). Valores normais hoje: 67–73% (provedor, Claro, iptv-epg-br, open-epg, epgshare-br2). **Claro precisa de `-0300`** (horário local com sufixo Z). Ao incluir uma fonte nova, olhe essa seção antes de confiar nela.
+
+## Proteções contra ligação errada (build_epg.py)
+- `source_health`: fuso e divergência por fonte (acima).
+- `consensus_pick`: troca a fonte escolhida de um canal quando ela diverge das demais (mapping manual nunca é trocado).
+- Detector de grades idênticas + `nome_confere`: ver HISTORICO (itens 11–13); isenções em `config.json` (`categorias_rede_ok`, `identicas_ok`, `aliases`).
+- Antes de confiar em qualquer ligação nova, rode o gerador e leia no `report.txt`: SAUDE DAS FONTES, CONSENSO, LIGACOES COM NOME DIFERENTE e GRADES IDENTICAS.
+
 ## Avisos automáticos (issues)
 `build_epg.py` gera `alerts/alerts.json` (`{"completo": bool, "alertas":[{key,title,body,repeat}]}`); o passo "Avisos por issue" do workflow abre/atualiza/fecha **issues com a label `epg-alerta`** (uma por `key`; o GitHub envia e-mail ao abrir). Se o aviso some numa execução completa, a issue é fechada sozinha.
 - `provedor-fora`: Xtream não responde (3 tentativas, `EPG_RETRY_WAIT` em segundos, padrão 30). **Não publica**: o EPG anterior continua no ar. Comenta a cada execução.
@@ -62,6 +71,8 @@ Actions (cron 0 */6 * * *, ou "Run workflow")
 - `lista-mudou`: canais caíram abaixo de 70% da execução anterior.
 - `fonte-fora-<nome>` (falhou em 2 execuções seguidas) e `fonte-parada-<nome>` (grade < 24 h à frente em 2 execuções seguidas). O estado entre execuções vai em `docs/state.json` (publicado no Pages e lido na próxima execução).
 - `favoritos`: canais de `config.json → favoritos` (substring do nome) sem EPG em ≥ 50% dos streams ou com grade acabando em < 12 h.
+- `fonte-fuso-<nome>` (fuso corrigido automaticamente), `fonte-divergente-<nome>` (fonte isolada/baixa concordância).
+- `grades-identicas`: canais diferentes com a mesma grade (provável ligação errada).
 - `sem-fontes`, `script-falhou`.
 Testado localmente com servidor Xtream falso (conta vencendo, favoritos, provedor fora). A parte JavaScript do workflow só roda no GitHub.
 
