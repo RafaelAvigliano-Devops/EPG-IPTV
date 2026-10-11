@@ -1,0 +1,22 @@
+name: Keepalive mensal
+# Repositório público: o GitHub desativa workflows agendados após 60 dias sem atividade.
+# O EPG é publicado pelo Pages (sem commits), então este job faz um commit mínimo por mês.
+on:
+  schedule:
+    - cron: "17 12 1 * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Registrar atividade
+        run: |
+          date -u +"%Y-%m-%dT%H:%MZ" > .keepalive
+          git config user.name "epg-bot"
+          git config user.email "epg-bot@users.noreply.github.com"
+          git add .keepalive
+          git commit -m "keepalive: mantém os workflows agendados ativos" || echo "nada a commitar"
+          git push

@@ -57,6 +57,9 @@ Actions (cron 0 */6 * * *, ou "Run workflow")
 ## Saúde das fontes (anti-erro de fuso/divergência)
 `source_health()` em `build_epg.py` compara cada fonte com as demais (título igual, mesmo canal, mesmo instante; títulos genéricos ignorados) e escreve a seção **SAUDE DAS FONTES** no `report.txt` (concordância, nº de comparações, melhor ajuste de fuso). Fuso errado é **corrigido automaticamente** (issue `fonte-fuso-<nome>`); fonte com < 15% é **isolada** (`fonte-divergente-<nome>`). Valores normais hoje: 67–73% (provedor, Claro, iptv-epg-br, open-epg, epgshare-br2). **Claro precisa de `-0300`** (horário local com sufixo Z). Ao incluir uma fonte nova, olhe essa seção antes de confiar nela.
 
+## Keepalive (workflow agendado em repositório público)
+O GitHub desativa workflows agendados após **60 dias sem atividade** no repositório público. Como o EPG sai pelo Pages (sem commits), `.github/workflows/keepalive.yml` roda **no dia 1 de cada mês** e commita `.keepalive` (data) como `epg-bot`. Custo do Actions: repositório público = runners gratuitos; uso real ~2,5 min por execução (~4 min cobrados se fosse privado) × 4/dia. Se um dia o EPG parar de atualizar sem aviso, conferir em Actions se os workflows foram desativados e reativá-los.
+
 ## Arquivos publicados e config de ajuste
 - `epg.xml` (completo, ~5,5 MB) e **`epg-lite.xml`** (2 dias, só título, ~2,4 MB; recomendado para TV lenta): `https://rafaelavigliano-devops.github.io/EPG-IPTV/epg-lite.xml`.
 - `config.json`: `fuso_conhecido` (fonte → horas), `fontes_curtas_ok` (sem aviso de fonte parada), `id_preferido` (ID repetido → nome que fica com a grade), `aliases`, `lite`, `identicas_ok`, `categorias_rede_ok`, `region_prefer`.
