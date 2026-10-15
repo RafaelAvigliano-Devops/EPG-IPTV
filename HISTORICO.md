@@ -68,3 +68,33 @@ Dono trocou usuário/link (antigos iam expirar) e atualizou os Secrets. Para sab
 
 ### 2026-10-15 — HBO+ com grade curta (issue `favoritos`)
 Causa: a Claro entrega a grade do HBO para o `hbo.plus.br` (0% de concordância com as demais); o **consenso** trocou para a fonte de maior concordância, mas o critério de empate era de só 5 pontos: `open-epg-3` (89%, grade só até 16/10) ganhou de 7 fontes com 74% (iptv-epg-br até 21/10, epgshare-br até 19/10). Correção em `consensus_pick`: entre as fontes com concordância ≥ 60% e até 20 pontos do topo, vence a de **grade mais longa** (HBO+ → iptv-epg-br, 74%, até 21/10). Reprodução: Xtream falso com `hbo.plus.br` + todas as fontes reais; imprimir `scores` de `consensus_pick`.
+
+## 2026-10-15 — Análise: como evitar que o guia fique divergente
+Pergunta do dono: "temos que evitar que o guia fique divergente". Método: simulação local do gerador com a lista real de canais (IDs e nomes do `channel_check.csv`/`channel_map.csv`), todas as fontes reais e instrumentação do consenso (`audit.jsonl` por canal: fonte escolhida × concordância com as demais fontes).
+
+### O que já existia (proteções de outra sessão)
+Saúde global por fonte (isola `epgshare-pt`), ajuste de fuso por fonte e por canal, `is_filler`, consenso (troca se a escolhida < 40% e outra ≥ 60% com ≥ 2 apoios), ligação com nome diferente, detector de grades idênticas, alertas por issue.
+
+### Medição (140 canais com ID)
+- Fonte inicial: **Claro em 83 (60%)**, open-epg-1 27, iptv-epg-br 16. Concordância da fonte escolhida: ≥ 80% em 73, 60–79% em 17, 40–59% em 5, **< 40% em 9**.
+- **36 canais não são verificáveis** (poucas fontes ou comparações): band.bahia/natal/brasília, paramount+ 1–4, premiere.3/6/7/8, sbt.piaui, tv.aratu… Para estes só dá para confiar na fonte.
+- Os errados eram quase todos **a Claro como ponto fora da curva** (5–10% de concordância contra 37–53% das demais): HBO+ (grade do HBO), TNT Novelas, TV Câmara, TV Escola, HGTV.
+- O consenso só olhava canais com ID: os ~150 **casados por nome** não tinham revisão.
+- **Falha de rede na Claro (`IncompleteRead`) tirava a fonte inteira da execução** e movia ~94 canais de fonte de uma vez, com queda de concordância em vários (ex.: Band News 91% → 47%). Era o maior risco de divergência em massa.
+
+### Classes de falha e defesa
+| Classe | Exemplo | Defesa |
+|---|---|---|
+| Ligação para o canal errado (nome parecido) | HBO+ = grade do HBO | consenso + **regra do ponto fora da curva** (escolhida < 25% e outra ≥ 35% e +25 pontos → troca) |
+| Casamento por nome sem revisão | canais sem ID do provedor | **consenso também nos casados por nome** (`[por nome]` no relatório) |
+| Fonte inteira cai/oscila | Claro `IncompleteRead` | **coleta da Claro paginada (10 mil/página ≈ 1,3 MB, `sort=id_exibicao`; páginas de 40 mil falham no servidor) com 4 tentativas por página** |
+| Fonte muda sem aviso | mislabel novo, scraper quebrado | **`state.json` guarda fonte e concordância por canal**; relatório lista "MUDARAM DE FONTE" e abre issue `canais-regrediram` se a concordância cair ≥ 40 pontos |
+| Grade suspeita que sobrou | HGTV (29%), Food Network (25%) | seção "BAIXA CONCORDANCIA" no `report.txt` + issue `baixa-concordancia` (< 40% com ≥ 3 fontes, após o consenso) |
+| Canal não verificável | ~36 canais | contagem "não verificáveis" no relatório; sem defesa possível além de fonte única |
+| Grade curta | HBO+ ao empatar | consenso escolhe a de grade mais longa entre as que concordam (≥ 60%, 20 pontos do topo) |
+
+### Limites honestos
+Concordância mede "as fontes dizem a mesma coisa", não "está certo": se todas copiam a mesma origem, o erro passa. Canais regionais têm discordância natural (jornal local) e ficam em 40–70%. A simulação não inclui o XMLTV do provedor (79% de saúde), que no Actions oferece mais um voto.
+
+### Como ler/operar
+`report.txt` → seção `CONCORDANCIA POR CANAL`, `BAIXA CONCORDANCIA`, `MUDARAM DE FONTE`. Teste local do estado anterior: variável `EPG_PREV_STATE_FILE=<state.json>` (só para testes).

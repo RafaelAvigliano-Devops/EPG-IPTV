@@ -40,6 +40,8 @@ def finish(publish):
 
 
 def prev_state():
+    if os.environ.get("EPG_PREV_STATE_FILE"):  # teste local: estado anterior vindo de arquivo
+        return json.load(open(os.environ["EPG_PREV_STATE_FILE"]))
     repo = os.environ.get("GITHUB_REPOSITORY", "")
     if "/" not in repo:
         return {}
@@ -242,6 +244,15 @@ def consensus_pick(cands, cur, tls, instants, lasts=None):
             best = max(near, key=lambda k: lasts.get(k) or 0) if near else best
         if best != cur and scores[cur][0] < 0.40 and scores[best][0] >= 0.60 and scores[best][1] >= 2:
             return best, scores
+        # ponto fora da curva: a escolhida quase não concorda com ninguém (< 25%) e outra concorda claramente mais (+25 pontos, >= 35%),
+        # mesmo sem consenso forte (canais regionais/locais em que todas as fontes divergem um pouco)
+        if scores[cur][0] < 0.25:
+            alts = [k for k in scores if k != cur and scores[k][0] >= max(0.35, scores[cur][0] + 0.25) and scores[k][1] >= 1]
+            if alts:
+                top = max(scores[k][0] for k in alts)
+                near = [k for k in alts if scores[k][0] >= top - 0.10]
+                tsf = lambda k: lasts[k].timestamp() if lasts and lasts.get(k) else 0
+                return max(near, key=tsf), scores
     return None, scores
 
 
@@ -316,14 +327,21 @@ def shift_source(source, hours):
 def load_claro(name, city, days):
     """(o WAF da Claro exige q= como 1º parâmetro) Grade da Claro (API Solr pública do site) só para a janela necessária, convertida para o formato das outras fontes."""
     base = "https://programacao.claro.com.br/gatekeeper"
-    q = lambda path, **kw: json.loads(get(f"{base}/{path}/select?" + urllib.parse.urlencode(kw, safe=":[]*-,") + "&wt=json"))["response"]["docs"]
+    # tentativas por página: uma única falha de rede (IncompleteRead em 12/10) tirava a Claro da execução e movia 60% dos canais de fonte
+    q = lambda path, **kw: json.loads(get_retry(f"{base}/{path}/select?" + urllib.parse.urlencode(kw, safe=":[]*-,") + "&wt=json",
+                                                tries=4, wait=5, timeout=90))["response"]["docs"]
     now = datetime.now(timezone.utc)
     # A Claro entrega horário LOCAL (Brasília, UTC-3) com sufixo "Z": tratar como -0300 (bug de 11/10: grade 3 h adiantada)
     loc = now - timedelta(hours=3)
     a, b = (loc - timedelta(hours=cfg["hours_past"] + 6)).strftime("%Y-%m-%dT%H:%M:00Z"), (loc + timedelta(days=days)).strftime("%Y-%m-%dT%H:%M:00Z")
     canais = q("canal", q=f"id_cidade:{city}", rows=1000, fl="id_canal nome cn_canal", fq="-cn_canal:0")
-    ex = q("exibicao", q=f"id_cidade:{city}", rows=300000, fl="id_canal titulo genero dh_inicio dh_fim",
-           fq=f"dh_inicio:[{a} TO {b}]")
+    ex, page = [], 10000  # paginado (~1,3 MB por página; páginas de 40 mil / 5 MB falham no servidor da Claro) com ordem estável
+    while True:
+        docs = q("exibicao", q=f"id_cidade:{city}", rows=page, start=len(ex), sort="id_exibicao asc",
+                 fl="id_canal titulo genero dh_inicio dh_fim", fq=f"dh_inicio:[{a} TO {b}]")
+        ex += docs
+        if len(docs) < page:
+            break
     ch, progs, last = {}, {}, {}
     for c in canais:
         ch[f"claro.{c['id_canal']}"] = ([c["nome"].replace("³", "").strip()], None)
@@ -516,6 +534,7 @@ def main():
     tls = [_timeline(x[1]) for x in sources]  # depois dos ajustes de fuso
     instants = [now.timestamp() + h * 1800 for h in range(48)]  # próximas 24 h, de 30 em 30 min
     swaps = []  # canais em que o consenso das fontes trocou a escolha
+    quality = {}  # id/nome -> (fonte final, concordância com as outras fontes ou None, nº de fontes candidatas, nome)
     horizon = now + timedelta(hours=cfg["min_hours_ahead"])
     win_min = now - timedelta(hours=cfg["hours_past"])
     win_max = now + timedelta(days=cfg["days_ahead"])
@@ -558,6 +577,7 @@ def main():
                 swaps.append(f"{eid} ({name}): {src_names[best[1]]} {sc[best[1]][0]:.0%} -> {src_names[alt]} {sc[alt][0]:.0%}")
                 best = ((True, sources[alt][2].get(cands[alt], now)), alt, cands[alt])
                 motivo = "consenso"
+            quality[eid] = (src_names[best[1]], (sc.get(best[1]) or (None,))[0], len(cands), name)
         if not best:
             report["sem_epg"].append(f"{eid} ({name})")
             continue
@@ -607,6 +627,17 @@ def main():
                 cid = find_by_name(by_name[i], key)
                 if cid and cid in progs and (hit is None or (not is_filler(progs[cid]), last.get(cid, now)) > (hit[3], hit[2])):
                     hit = (i, cid, last.get(cid, now), not is_filler(progs[cid]))
+            cands_n = {}
+            for i, (ch, progs, last) in enumerate(sources):
+                cid = find_by_name(by_name[i], key)
+                if cid and cid in progs:
+                    cands_n[i] = cid
+            if hit and len(cands_n) >= 3 and hit[0] in cands_n:
+                alt_n, sc_n = consensus_pick(cands_n, hit[0], tls, instants, {i_: sources[i_][2].get(c_) for i_, c_ in cands_n.items()})
+                if alt_n is not None:
+                    swaps.append(f"[por nome] {s['name']}: {src_names[hit[0]]} {sc_n[hit[0]][0]:.0%} -> {src_names[alt_n]} {sc_n[alt_n][0]:.0%}")
+                    hit = (alt_n, cands_n[alt_n], sources[alt_n][2].get(cands_n[alt_n], now), True)
+                quality["nome:" + key] = (src_names[hit[0]], (sc_n.get(hit[0]) or (None,))[0], len(cands_n), s["name"])
             name_map[key] = hit
         hit = name_map[key]
         if not hit:
@@ -667,6 +698,26 @@ def main():
     if probs:
         alert("favoritos", f"Canais favoritos com problema ({len(probs)})", "\n".join(probs))
 
+
+    # --- concordância por canal e regressão entre execuções (guia divergente) ---
+    baixa = [f"{k} ({q[3][:28]}): {q[0]} {q[1]:.0%} com {q[2]} fontes" for k, q in sorted(quality.items())
+             if q[1] is not None and q[1] < 0.40 and q[2] >= 3]
+    prev_q = prev.get("canais", {})
+    STATE_NEW["canais"] = {k: [q[0], round(q[1], 2) if q[1] is not None else None] for k, q in quality.items()}
+    mudou, regrediu = [], []
+    for k, (fonte_, sc_) in STATE_NEW["canais"].items():
+        pf_ = prev_q.get(k)
+        if pf_ and pf_[0] != fonte_:
+            mudou.append(f"{k} ({quality[k][3][:28]}): {pf_[0]} {('%.0f%%' % (pf_[1] * 100)) if pf_[1] is not None else '?'} -> {fonte_} {('%.0f%%' % (sc_ * 100)) if sc_ is not None else '?'}")
+        if pf_ and pf_[1] is not None and sc_ is not None and pf_[1] - sc_ >= 0.40:
+            regrediu.append(f"- {k} ({quality[k][3][:28]}): concordância caiu de {pf_[1]:.0%} para {sc_:.0%} ({pf_[0]} -> {fonte_})")
+    if regrediu:
+        alert("canais-regrediram", f"Canais que passaram a divergir das outras fontes ({len(regrediu)})",
+              "A grade escolhida concordava com as demais e agora não concorda (fonte mudou de conteúdo ou de ligação):\n" + "\n".join(regrediu[:15]))
+    if len(baixa) >= 1:
+        alert("baixa-concordancia", f"Canais com grade suspeita ({len(baixa)})",
+              "A fonte final concorda < 40% com as demais (>= 3 fontes comparadas), mesmo após o consenso. Pode ser grade errada:\n"
+              + "\n".join(f"- {x}" for x in baixa[:15]))
 
     # --- grades idênticas entre canais diferentes (sinal de ligação errada) ---
     seqs = {}
@@ -765,6 +816,15 @@ def main():
         f.write("".join(f"  {x}\n" for x in nomes_ruins))
         f.write(f"GRADES IDENTICAS entre canais diferentes (fora das mesmas redes): {len(dups)}\n")
         f.write("".join(f"  {x}\n" for x in dups))
+        f.write(f"CONCORDANCIA POR CANAL (fonte final × demais fontes): {len(quality)} canais medidos\n")
+        f.write(f"  verificados (>=3 fontes comparáveis): {sum(1 for q in quality.values() if q[1] is not None)}"
+                f" | não verificáveis (poucas fontes/comparações): {sum(1 for q in quality.values() if q[1] is None)}\n")
+        f.write("".join(f"  {b}: {sum(1 for q in quality.values() if q[1] is not None and lo <= q[1] < hi)}\n"
+                        for b, lo, hi in (("  >=80%", .8, 1.01), ("  60-79%", .6, .8), ("  40-59%", .4, .6), ("  <40% (suspeito)", 0, .4))))
+        f.write(f"BAIXA CONCORDANCIA (<40%, >=3 fontes) após o consenso ({len(baixa)}):\n")
+        f.write("".join(f"  {x}\n" for x in baixa))
+        f.write(f"MUDARAM DE FONTE desde a execução anterior ({len(mudou)}):\n")
+        f.write("".join(f"  {x}\n" for x in mudou[:40]))
         f.write("\n" + "=" * 50 + "\nDETALHES\n" + "=" * 50 + "\n")
         f.write(f"\nEPG curto/desatualizado ({len(report['curto'])}):\n" + "\n".join(report["curto"]))
         f.write(f"\n\nIDs do provedor sem EPG em nenhuma fonte ({len(report['sem_epg'])}):\n" + "\n".join(report["sem_epg"]))

@@ -80,6 +80,7 @@ O GitHub desativa workflows agendados após **60 dias sem atividade** no reposit
 - `favoritos`: canais de `config.json → favoritos` (substring do nome) sem EPG em ≥ 50% dos streams ou com grade acabando em < 12 h.
 - `fonte-fuso-<nome>` (fuso corrigido automaticamente), `fonte-divergente-<nome>` (fonte isolada/baixa concordância).
 - `grades-identicas`: canais diferentes com a mesma grade (provável ligação errada).
+- `canais-regrediram` (concordância do canal caiu ≥ 40 pontos desde a execução anterior) e `baixa-concordancia` (fonte final < 40% de concordância com ≥ 3 fontes): ver "Análise" no HISTORICO.md.
 - `telas-menos`: `max_connections` do provedor menor que `telas_esperadas` (config.json, hoje 4). A 1ª linha do `report.txt` mostra "Conta: status · telas contratadas · em uso agora · vence em" (só números, sem usuário/senha/host); `epgctl.py summary` a exibe.
 - `sem-fontes`, `script-falhou`.
 Testado localmente com servidor Xtream falso (conta vencendo, favoritos, provedor fora). A parte JavaScript do workflow só roda no GitHub.
