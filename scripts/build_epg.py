@@ -570,7 +570,8 @@ def main():
             for i, (ch, progs, last) in enumerate(sources):
                 for cand in (find_by_name(by_name[i], major), eid):
                     if cand and cand in progs:
-                        cands[i] = cand
+                        if not is_filler(progs[cand]):  # grade genérica não vota (Premiere sem jogo: "Premiere 2" o dia todo)
+                            cands[i] = cand
                         break
             alt, sc = consensus_pick(cands, best[1], tls, instants, {i_: sources[i_][2].get(c_) for i_, c_ in cands.items()})
             if alt is not None:
@@ -630,7 +631,7 @@ def main():
             cands_n = {}
             for i, (ch, progs, last) in enumerate(sources):
                 cid = find_by_name(by_name[i], key)
-                if cid and cid in progs:
+                if cid and cid in progs and not is_filler(progs[cid]):
                     cands_n[i] = cid
             if hit and len(cands_n) >= 3 and hit[0] in cands_n:
                 alt_n, sc_n = consensus_pick(cands_n, hit[0], tls, instants, {i_: sources[i_][2].get(c_) for i_, c_ in cands_n.items()})

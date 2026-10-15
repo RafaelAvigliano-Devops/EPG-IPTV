@@ -98,3 +98,6 @@ Concordância mede "as fontes dizem a mesma coisa", não "está certo": se todas
 
 ### Como ler/operar
 `report.txt` → seção `CONCORDANCIA POR CANAL`, `BAIXA CONCORDANCIA`, `MUDARAM DE FONTE`. Teste local do estado anterior: variável `EPG_PREV_STATE_FILE=<state.json>` (só para testes).
+
+### Primeiro run com as defesas (run `38791833643`, 15/10 19:11 UTC)
+Fechou a issue do HBO+ (→ iptv-epg-br 76%); consenso trocou 5 canais (HBO+, HGTV, RIT, TNT Novelas, TV Câmara). **Falso positivo achado:** Premiere 2/3/4/6 apareciam com 0% de concordância porque as outras fontes só têm título genérico ("Premiere 2") e votavam contra a Claro, que está certa (jogos reais). Correção: candidato `is_filler` **não vota** no consenso nem na medição (fica "não verificável" em vez de 0%). Suspeitos reais que sobram: TV Escola (todas as fontes divergem), TVE, Ideal TV.
