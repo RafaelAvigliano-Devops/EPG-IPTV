@@ -65,3 +65,6 @@ Relatório de divergências entre fontes no `report.txt`; usar `vivoplay`/`claro
 
 ## 2026-10-15 — troca de conta e licença de 4 telas
 Dono trocou usuário/link (antigos iam expirar) e atualizou os Secrets. Para saber quantas telas a licença tem sem expor credenciais: `build_epg.py` lê `user_info.max_connections`/`active_cons` e escreve a linha "Conta: …" no `report.txt`; aviso `telas-menos` se vier menos que `telas_esperadas` (4). A issue `conta-expira` fecha sozinha quando o provedor informar o novo vencimento. Consulta manual equivalente: `player_api.php?username=…&password=…` → `user_info.max_connections` (rodar só em terminal real, com variáveis de ambiente; a caixa `!` do app não aceita `read`).
+
+### 2026-10-15 — HBO+ com grade curta (issue `favoritos`)
+Causa: a Claro entrega a grade do HBO para o `hbo.plus.br` (0% de concordância com as demais); o **consenso** trocou para a fonte de maior concordância, mas o critério de empate era de só 5 pontos: `open-epg-3` (89%, grade só até 16/10) ganhou de 7 fontes com 74% (iptv-epg-br até 21/10, epgshare-br até 19/10). Correção em `consensus_pick`: entre as fontes com concordância ≥ 60% e até 20 pontos do topo, vence a de **grade mais longa** (HBO+ → iptv-epg-br, 74%, até 21/10). Reprodução: Xtream falso com `hbo.plus.br` + todas as fontes reais; imprimir `scores` de `consensus_pick`.

@@ -237,8 +237,8 @@ def consensus_pick(cands, cur, tls, instants, lasts=None):
             scores[i] = (sum(vals) / len(vals), sum(v >= 0.5 for v in vals))
     if cur in scores and len(scores) >= 3:
         best = max(scores, key=lambda k: scores[k])
-        if lasts:  # empate técnico (até 5 pontos) -> a fonte com a grade mais longa
-            near = [k for k in scores if scores[k][0] >= scores[best][0] - 0.05 and scores[k][1] >= 2]
+        if lasts:  # fontes que concordam de verdade (>= 60% e até 20 pontos do topo) -> a de grade mais longa (ex.: HBO+: 89% com grade até 16/10 × 74% até 21/10)
+            near = [k for k in scores if scores[k][0] >= max(0.60, scores[best][0] - 0.20) and scores[k][1] >= 2]
             best = max(near, key=lambda k: lasts.get(k) or 0) if near else best
         if best != cur and scores[cur][0] < 0.40 and scores[best][0] >= 0.60 and scores[best][1] >= 2:
             return best, scores
