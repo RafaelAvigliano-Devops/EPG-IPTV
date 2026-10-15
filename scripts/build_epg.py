@@ -379,6 +379,19 @@ def main():
                   "Renove com o provedor; se ele enviar um novo usuário/senha/host, atualize os secrets.")
     except (KeyError, TypeError, ValueError):
         pass
+    # telas da licença: só números (nada de usuário/senha/host) vão para o report público
+    try:
+        telas = int(ui.get("max_connections"))
+    except (TypeError, ValueError):
+        telas = None
+    conta_linha = (f"Conta: {ui.get('status', '?')} · telas contratadas: {telas if telas is not None else '?'}"
+                   f" · em uso agora: {ui.get('active_cons', '?')}"
+                   + (f" · vence em {exp:%d/%m/%Y}" if "exp" in locals() else "") + "\n")
+    esperadas_telas = cfg.get("telas_esperadas")
+    if esperadas_telas and telas is not None and telas < esperadas_telas:
+        alert("telas-menos", f"Licença com {telas} tela(s), esperado {esperadas_telas}",
+              f"O provedor informa max_connections={telas}, mas `telas_esperadas` em config.json é {esperadas_telas}. "
+              "Confira com o provedor se a licença comprada foi ativada corretamente.")
     prev = prev_state()
     if prev.get("streams") and len(streams) < 0.7 * prev["streams"]:
         alert("lista-mudou", "A lista do provedor encolheu muito",
@@ -725,6 +738,7 @@ def main():
     with_epg = streams_by_id + matched
     with open(os.path.join(ROOT, "docs", "report.txt"), "w") as f:
         f.write(f"RESUMO - gerado em {now:%Y-%m-%d %H:%M} UTC\n")
+        f.write(conta_linha)
         f.write("=" * 50 + "\n")
         f.write(f"Canais na lista do provedor ........ {len(streams)}\n")
         f.write(f"  Com EPG ........................... {with_epg}\n")

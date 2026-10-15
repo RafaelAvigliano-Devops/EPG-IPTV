@@ -149,5 +149,6 @@
       "title"
     ],
     "max_names": 6
-  }
+  },
+  "telas_esperadas": 4
 }

@@ -62,3 +62,6 @@ Tokens do GitHub da conta do dono aparecem **em texto puro em transcritos antigo
 
 ### Ideias que ficaram
 Relatório de divergências entre fontes no `report.txt`; usar `vivoplay`/`clarotvmais` no job do iptv-org como reserva extra; fixar o commit do `iptv-org/epg` se um scraper quebrar; cache da última cópia das fontes; painel `index.html` no Pages; fixar `ubuntu-24.04` no workflow antes de 19/10/2026 (o `ubuntu-latest` migra para o Ubuntu 26).
+
+## 2026-10-15 — troca de conta e licença de 4 telas
+Dono trocou usuário/link (antigos iam expirar) e atualizou os Secrets. Para saber quantas telas a licença tem sem expor credenciais: `build_epg.py` lê `user_info.max_connections`/`active_cons` e escreve a linha "Conta: …" no `report.txt`; aviso `telas-menos` se vier menos que `telas_esperadas` (4). A issue `conta-expira` fecha sozinha quando o provedor informar o novo vencimento. Consulta manual equivalente: `player_api.php?username=…&password=…` → `user_info.max_connections` (rodar só em terminal real, com variáveis de ambiente; a caixa `!` do app não aceita `read`).
