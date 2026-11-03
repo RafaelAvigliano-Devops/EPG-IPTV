@@ -86,7 +86,7 @@ Medida de qualidade = **concordância**: fração de instantes (próximas 24 h, 
 - `fonte-fuso-<nome>` (fuso corrigido automaticamente), `fonte-divergente-<nome>` (fonte isolada/baixa concordância).
 - `grades-identicas`: canais diferentes com a mesma grade (provável ligação errada).
 - `canais-regrediram` (concordância do canal caiu ≥ 40 pontos desde a execução anterior) e `baixa-concordancia` (fonte final < 40% de concordância com ≥ 3 fontes): ver "Análise" no HISTORICO.md.
-- `telas-menos`: `max_connections` do provedor menor que `telas_esperadas` (config.json, hoje 4). A 1ª linha do `report.txt` mostra "Conta: status · telas contratadas · em uso agora · vence em" (só números, sem usuário/senha/host); `epgctl.py summary` a exibe.
+- `telas-menos`: `max_connections` do provedor menor que `telas_esperadas` (config.json, hoje 3). A 1ª linha do `report.txt` mostra "Conta: status · telas contratadas · em uso agora · vence em" (só números, sem usuário/senha/host); `epgctl.py summary` a exibe.
 - `sem-fontes`, `script-falhou`.
 Testado localmente com servidor Xtream falso (conta vencendo, favoritos, provedor fora). A parte JavaScript do workflow só roda no GitHub.
 
@@ -113,13 +113,14 @@ XTREAM_URL=... XTREAM_USER=... XTREAM_PASS=... [M3U4U_EPG_URL=...] python3 scrip
 ## Histórico de decisões (resumo)
 Fonte única do provedor estava velha → múltiplas fontes, vence a grade mais longa → bug de elementos XML compartilhados (HBO sem grade) corrigido com cópia por canal → app TVLOK ignorava a fonte adicional (usar override) → arquivo de 16 MB/gz lento → XML enxuto sem gz → histórico git crescia → Pages via Actions → IDs errados/repetidos do provedor → casamento por nome primeiro + região RS → variantes 4K irmãs.
 
-## Estado atual (2026-10-15) e como continuar
-- **Cobertura:** 1.162 de 2.034 canais com EPG (872 sem: séries/desenhos 24h, adulto, PPV, eventos, afiliadas pequenas; nenhuma fonte brasileira testada os tem). A cobertura quase não mudou desde 09/10; o trabalho foi de **qualidade** (ver `HISTORICO.md`).
-- **Fontes ativas:** provedor, EPG_Share (br/br2/pt), Pluto, iptv-epg.org, epg.pw, Open-EPG (1,2,3,4,6,7), **Claro** (Canoas-RS, paginada), **mi.tv** (job isolado). m3u4u removido.
-- **Conta (15/10):** usuário/link trocados pelo dono (os antigos iam expirar), Secrets atualizados; ativa, vence em 16/10/2027; **licença com 3 telas** (`report.txt` 1ª linha). `telas_esperadas: 4` em `config.json` gera a issue `telas-menos` — dono deve conferir com o provedor ou ajustar para 3.
-- **Último run conhecido:** `38791833643` (15/10 19:11 UTC) verde nos 3 jobs. Consenso trocou 5 canais (HBO+, HGTV, RIT, TNT Novelas, TV Câmara). Correção posterior `0351736` (grade genérica não vota) ainda **não medida no Actions**: próximo run agendado 00:00 UTC; conferir se a issue `baixa-concordancia` encolheu (esperado: sem os Premiere).
-- **Issues abertas em 15/10:** 13 `baixa-concordancia` (Premiere = falso positivo já corrigido; reais: TV Escola, TVE, Ideal TV, HGTV), 12 `telas-menos`, 10 `grades-identicas` (Premiere HD 2 = Premiere 3 etc.: mesmo jogo em vários canais; ESPN 5 ≈ ESPN 6 vale olhar), 3 `fonte-divergente-epgshare-pt` (isolada automaticamente, ok).
-- **Pendências do dono:** (1) conferir na TV o que a **ESPN 2** exibe (hoje ESPN repetida com ~3 h de atraso via `ESPN2.br`; `mapping.json` fixa `espn.2.br`); (2) mandar exemplos de variantes que ainda aparecem erradas no TVLOK; (3) resolver 3 × 4 telas; (4) **rotacionar os tokens do GitHub** que estão em texto puro em transcritos antigos de sessão do Claude Code e criar um token só de Actions em `~/.service_env`.
+## Estado atual (2026-11-03) e como continuar
+- **Cobertura:** **781 de 2.036** canais com EPG (1.255 sem). A queda desde 1.162 é do **EPG do provedor vazio** (#32), não do casamento: o `provedor` está com `curta=19` e 0 canais usados; a Claro virou a maior fonte (156 canais).
+- **Fontes ativas:** provedor (xmltv vazio em 03/11), EPG_Share (br/br2 — **pt removida em 03/11**), Pluto, iptv-epg.org, epg.pw, Open-EPG (1,2,3,4,6,7), **Claro** (Canoas-RS, paginada), **mi.tv** (job isolado). m3u4u removido.
+- **Conta (03/11):** ativa, **3 telas**, em uso 1, vence em 16/10/2027. `telas_esperadas: 3` (issue #12 fechada).
+- **Último run:** `41741285255` (03/11 23:44 UTC), verde nos 3 jobs. `epg.xml` ~3,85 MB (368 KB gzip); `epg-lite.xml` ~1,75 MB (158 KB gzip).
+- **Issues abertas em 03/11:** #32 (`provedor` parado — provedor), #28 (só ESPN 5 × 6; Premiere isentas), #13 (5 canais de baixa concordância: Food Network, Premiere 2, RIT, Sexy Hot, TVE). #12, #25 e #29 fechadas em 03/11.
+- **Correções de 03/11:** `globo.rbs.tv.poa.br` → `claro.2140` (Globo RBS RS; 76 programas); `epgshare-pt` removida; `identicas_ok` para Premiere 2/4/5/3 4K e 6/7; README recomenda `epg-lite.xml`.
+- **Pendências do dono:** (1) conferir a **ESPN 5 × ESPN 6** (42/48 iguais; simulcast ou ligação errada); (2) **provedor**: EPG vazio há 19 execuções (#32) — pedir reativação/URL correta; (3) conferir os 5 canais de baixa concordância (#13); (4) **rotacionar os tokens do GitHub** que estão em texto puro em transcritos antigos e criar um token só de Actions em `~/.service_env`.
 - **Sem solução em fonte pública:** Globo Rede Amazônica/EPTV Araraquara/Band RN/SBT regionais, Fórmula 1, Agro Canal, Sportynet 02/03 (só o m3u4u tinha), Gazeta Alagoas/Norte ES.
 - **Descartadas:** `epg.lat` (arquivo velho, espelho do EPG_Share), `globetvapp/epg`, `limaalef/BrazilTVEPG`, `iptv-com/epg`, open-epg `brazil2/5`, guias prontos iptv-org (404), Plex/Samsung/Roku.
 - **Risco conhecido:** a API da Claro não é documentada e pode mudar/bloquear (WAF exige `q=` como 1º parâmetro, `:` sem codificar, data com segundos); `guiadetv.com` e `meuguia.tv` (iptv-org) estão quebrados.

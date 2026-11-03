@@ -101,3 +101,12 @@ Concordância mede "as fontes dizem a mesma coisa", não "está certo": se todas
 
 ### Primeiro run com as defesas (run `38791833643`, 15/10 19:11 UTC)
 Fechou a issue do HBO+ (→ iptv-epg-br 76%); consenso trocou 5 canais (HBO+, HGTV, RIT, TNT Novelas, TV Câmara). **Falso positivo achado:** Premiere 2/3/4/6 apareciam com 0% de concordância porque as outras fontes só têm título genérico ("Premiere 2") e votavam contra a Claro, que está certa (jogos reais). Correção: candidato `is_filler` **não vota** no consenso nem na medição (fica "não verificável" em vez de 0%). Suspeitos reais que sobram: TV Escola (todas as fontes divergem), TVE, Ideal TV.
+
+## 2026-11-03 — limpeza de fontes, Globo RBS e telas = 3
+- `telas_esperadas` 4 → 3 (licença real); issue #12 fechada.
+- `epgshare-pt` removida de `config.json` (0 canais usados, isolada em 15%); issue #25 fechada.
+- `globo.rbs.tv.poa.br` → `claro.2140` em `mapping.json` (Globo RBS RS); 3 streams passaram a ter EPG (76 programas); issue #29 fechada. Cobertura 778 → 781.
+- `identicas_ok` para Premiere 2/4/5/3 4K e 6/7; issue #28 ficou só com ESPN 5 × 6 (42/48).
+- Provedor sem EPG (`state.fontes.provedor.curta=19`, 0 canais usados): a cobertura caiu de 1.162 para 781; issue #32 aberta — é do provedor, não do script.
+- Issues abertas após os runs: #32 (provedor), #28 (ESPN 5 × 6), #13 (5 canais de baixa concordância).
+- Runs `41740881311` e `41741285255` verdes nos 3 jobs.
