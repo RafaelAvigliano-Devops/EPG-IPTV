@@ -4,7 +4,10 @@ EPG (guia de programação XMLTV) próprio para lista IPTV Xtream, gerado e publ
 
 **Link do EPG:** `https://rafaelavigliano-devops.github.io/EPG-IPTV/epg.xml`
 
-No app (ex.: TVLOK) coloque esse link em **EPG URL override**.
+Para TV lenta ou app que demora para montar o guia (ex.: TVLOK), use a versão leve:
+`https://rafaelavigliano-devops.github.io/EPG-IPTV/epg-lite.xml` (2 dias, só título, ~1,8 MB; ~158 KB gzip).
+
+No app (ex.: TVLOK) coloque o link em **EPG URL override**.
 
 ## Como funciona
 O Actions lê a lista do provedor, baixa o EPG do provedor, de fontes públicas e da grade da Claro (Canoas-RS), casa os canais (por nome e por ID, priorizando a região) e publica um `epg.xml` enxuto no GitHub Pages. Detalhes técnicos, limites e decisões em [AGENTS.md](AGENTS.md); histórico, armadilhas e como operar em [HISTORICO.md](HISTORICO.md).
